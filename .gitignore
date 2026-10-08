@@ -1,0 +1,21 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.venv/
+venv/
+dist/
+build/
+.coverage
+htmlcov/
+
+# Local experiment outputs; keep schemas and manifests in version control.
+data/raw/
+data/processed/
+artifacts/
+experiments/*/outputs/
+
+# Secrets and local configuration.
+.env
+.env.*
+!.env.example
