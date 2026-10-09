@@ -7,8 +7,10 @@ import ExperimentExplorer from './components/ExperimentExplorer';
 import ArchitectureView from './components/ArchitectureView';
 import BatchAssignment from './components/BatchAssignment';
 import LiveAPI from './components/LiveAPI';
+import GuidedDemo from './components/GuidedDemo';
 
 const TABS = [
+  { id: 'demo', label: '🚀 Guided Demo', icon: '🚀' },
   { id: 'playground', label: '🗺️ Match Playground', icon: '🗺️' },
   { id: 'batch', label: '🚐 Batch Assignment', icon: '🚐' },
   { id: 'experiments', label: '📊 Experiments', icon: '📊' },
@@ -17,7 +19,7 @@ const TABS = [
 ];
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState('playground');
+  const [activeTab, setActiveTab] = useState('demo');
   const [seed, setSeed] = useState(42);
   const [driverCount, setDriverCount] = useState(12);
   const [selectedDriver, setSelectedDriver] = useState(null);
@@ -107,6 +109,8 @@ export default function App() {
 
       {/* Content */}
       <main className="main-content">
+        {activeTab === 'demo' && <GuidedDemo onNavigateTab={setActiveTab} />}
+
         {activeTab === 'playground' && (
           <div className="animate-in" id="playground-view">
             <div className="section-header">

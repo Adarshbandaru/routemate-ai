@@ -274,6 +274,15 @@ export default function BatchAssignment() {
               <span className="badge info">{result.groups.length} groups</span>
             </div>
             <div className="card-body" style={{ padding: '12px' }}>
+              {result.groups.length === 0 && (
+                <div className="empty-state" style={{ padding: '24px 12px' }}>
+                  <div className="empty-state-icon">🚐</div>
+                  <div className="empty-state-text">No Feasible Pools Formed</div>
+                  <div className="empty-state-hint">
+                    No rider candidates met the detour and capacity constraints for this cohort. Try adjusting the seed or increasing the driver fleet size.
+                  </div>
+                </div>
+              )}
               {result.groups.map((group, idx) => {
                 const isSelected = selectedGroup === idx;
                 const color = PALETTE[idx % PALETTE.length];

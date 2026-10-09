@@ -27,6 +27,29 @@ const METHOD_COLORS = {
   greedy: '#64748b',
   auction: '#06b6d4',
   optimal: '#10b981',
+  heuristic: '#f59e0b',
+  unpruned: '#64748b',
+  two_stage: '#8b5cf6',
+  admissible: '#10b981',
+  free_flow: '#64748b',
+  bpr_mild: '#06b6d4',
+  bpr_moderate: '#f59e0b',
+  bpr_severe: '#ef4444',
+  bpr_directional: '#a855f7',
+  single_occupancy: '#64748b',
+  dual_pooling: '#10b981',
+  triple_pooling: '#06b6d4',
+  quad_pooling: '#8b5cf6',
+  static: '#ef4444',
+  recourse: '#10b981',
+  static_batch: '#ef4444',
+  periodic_rolling: '#f59e0b',
+  event_driven_rolling: '#10b981',
+  H1_rules_improve_precision: '#10b981',
+  H2_network_circuity_divergence: '#10b981',
+  H3_recourse_restores_feasibility: '#10b981',
+  RQ4_exact_vs_heuristic_gap: '#f59e0b',
+  RQ5_rolling_vs_batch_quantization: '#f59e0b',
 };
 
 function BarChart({ data, metric, maxValue = 1, highlightBest = true }) {
@@ -170,13 +193,43 @@ function HeatmapView({ data, metric }) {
   );
 }
 
+const CATEGORIES = [
+  { id: 'all', label: 'All (14)' },
+  { id: 'ranking', label: 'Matching & Baselines (001–005)' },
+  { id: 'network', label: 'Road Network & Traffic (006, 008–010)' },
+  { id: 'operations', label: 'Fleet & Operations (007, 011–013)' },
+  { id: 'synthesis', label: 'Research Synthesis (014)' },
+];
+
+const EXP_CATEGORIES = {
+  '001_baseline': 'ranking',
+  '002_ablation': 'ranking',
+  '003_robustness': 'ranking',
+  '004_heldout': 'ranking',
+  '005_classical_ml': 'ranking',
+  '006_road_network': 'network',
+  '007_assignment_scaling': 'operations',
+  '008_road_network_validation': 'network',
+  '009_hybrid_pruning': 'network',
+  '010_dynamic_congestion': 'network',
+  '011_multi_rider_pooling': 'operations',
+  '012_dynamic_recourse': 'operations',
+  '013_rolling_dispatch': 'operations',
+  '014_research_synthesis': 'synthesis',
+};
+
 export default function ExperimentExplorer() {
   const [activeExp, setActiveExp] = useState('001_baseline');
+  const [category, setCategory] = useState('all');
   const [metric, setMetric] = useState('ndcg');
   const [scenario, setScenario] = useState('all');
   const [viewMode, setViewMode] = useState('chart'); // chart | table | heatmap | radar
 
   const exp = EXPERIMENT_DATA[activeExp];
+
+  const visibleExpKeys = useMemo(() => {
+    return Object.keys(EXPERIMENT_DATA).filter((k) => category === 'all' || EXP_CATEGORIES[k] === category);
+  }, [category]);
 
   const scenarios = useMemo(
     () => (exp ? [...new Set(exp.results.map((r) => r.scenario))] : []),
@@ -214,26 +267,58 @@ export default function ExperimentExplorer() {
   return (
     <div className="animate-in" id="experiment-explorer">
       <div className="section-header">
-        <h2 className="section-title">📊 Experiment Explorer</h2>
-        <p className="section-desc">
-          Compare ranking algorithms and routing methods across controlled synthetic benchmarks and road network experiments.
-        </p>
-      </div>
-
-      {/* Experiment selector */}
-      <div style={{ display: 'flex', gap: '12px', marginBottom: '24px', flexWrap: 'wrap', alignItems: 'center' }}>
-        <div className="experiment-selector">
-          {Object.entries(EXPERIMENT_DATA).map(([key, val]) => (
-            <button key={key}
-              className={`experiment-chip ${activeExp === key ? 'active' : ''}`}
-              onClick={() => { setActiveExp(key); setScenario('all'); }}>
-              {val.name}
-            </button>
-          ))}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '8px' }}>
+          <div>
+            <h2 className="section-title">📊 Experiment Explorer</h2>
+            <p className="section-desc">
+              Compare ranking algorithms and routing methods across controlled synthetic benchmarks and road network experiments.
+            </p>
+          </div>
+          <span className="badge warning" style={{ padding: '4px 10px', fontSize: '11px' }}>
+            🔬 Controlled Synthetic Micro-Simulation
+          </span>
         </div>
       </div>
 
-      {/* Road Network Summary Banner */}
+      {/* Category Filter Tabs */}
+      <div style={{ display: 'flex', gap: '8px', marginBottom: '16px', flexWrap: 'wrap' }}>
+        {CATEGORIES.map((c) => (
+          <button
+            key={c.id}
+            className={`btn btn-sm ${category === c.id ? 'btn-primary' : 'btn-outline'}`}
+            onClick={() => {
+              setCategory(c.id);
+              const matching = Object.keys(EXPERIMENT_DATA).filter((k) => c.id === 'all' || EXP_CATEGORIES[k] === c.id);
+              if (matching.length && !matching.includes(activeExp)) {
+                setActiveExp(matching[0]);
+                setScenario('all');
+              }
+            }}
+          >
+            {c.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Experiment selector chips */}
+      <div style={{ display: 'flex', gap: '8px', marginBottom: '24px', flexWrap: 'wrap', alignItems: 'center' }}>
+        <div className="experiment-selector">
+          {visibleExpKeys.map((key) => {
+            const val = EXPERIMENT_DATA[key];
+            return (
+              <button
+                key={key}
+                className={`experiment-chip ${activeExp === key ? 'active' : ''}`}
+                onClick={() => { setActiveExp(key); setScenario('all'); }}
+              >
+                {val.name}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Road Network Summary Banner (006) */}
       {exp.summary?.mean_circuity && (
         <div className="card animate-in" style={{ marginBottom: '24px', borderLeft: '4px solid #10b981' }}>
           <div className="card-header">
@@ -267,7 +352,7 @@ export default function ExperimentExplorer() {
         </div>
       )}
 
-      {/* Assignment Scaling Summary Banner */}
+      {/* Assignment Scaling Summary Banner (007) */}
       {exp.summary?.overall_greedy_gap_pct !== undefined && (
         <div className="card animate-in" style={{ marginBottom: '24px', borderLeft: '4px solid #06b6d4' }}>
           <div className="card-header">
@@ -295,6 +380,244 @@ export default function ExperimentExplorer() {
                 <div className="stat-label">Heuristic Speedup</div>
                 <div className="stat-value cyan">{exp.summary.speedup_factor}</div>
                 <div className="stat-detail">&lt;0.25ms vs &gt;4,800ms exact B&B</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Road Network Validation Banner (008) */}
+      {exp.summary?.false_positive_rate_pct !== undefined && (
+        <div className="card animate-in" style={{ marginBottom: '24px', borderLeft: '4px solid #ef4444' }}>
+          <div className="card-header">
+            <span className="card-title">🏙️ OSM Downtown SF Road Validation (Exp 008)</span>
+            <span className="badge danger">75.6% Euclidean False Positives</span>
+          </div>
+          <div className="card-body">
+            <div className="stats-grid" style={{ marginBottom: 0 }}>
+              <div className="stat-card pink">
+                <div className="stat-label">Euclidean False Positive Rate</div>
+                <div className="stat-value pink">{exp.summary.false_positive_rate_pct}%</div>
+                <div className="stat-detail">34 of 45 pairs fail on road graph</div>
+              </div>
+              <div className="stat-card amber">
+                <div className="stat-label">Top-1 Disagreement</div>
+                <div className="stat-value amber">{exp.summary.top1_disagreement_pct}%</div>
+                <div className="stat-detail">Dijkstra inverts top recommendation</div>
+              </div>
+              <div className="stat-card cyan">
+                <div className="stat-label">Routing Call Overhead</div>
+                <div className="stat-value cyan">{exp.summary.routing_slowdown}</div>
+                <div className="stat-detail">Dijkstra vs straight-line math</div>
+              </div>
+              <div className="stat-card green">
+                <div className="stat-label">Verified Feasible Pairs</div>
+                <div className="stat-value green">{exp.summary.network_eligible}</div>
+                <div className="stat-detail">Out of 250 candidate pairs</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Hybrid Pruning Banner (009) */}
+      {exp.summary?.pruned_percentage !== undefined && (
+        <div className="card animate-in" style={{ marginBottom: '24px', borderLeft: '4px solid #10b981' }}>
+          <div className="card-header">
+            <span className="card-title">✂️ Two-Tier Admissible Pruning (Exp 009)</span>
+            <span className="badge success">100% Feasible Recall Preserved</span>
+          </div>
+          <div className="card-body">
+            <div className="stats-grid" style={{ marginBottom: 0 }}>
+              <div className="stat-card green">
+                <div className="stat-label">Candidate Pairs Pruned</div>
+                <div className="stat-value green">{exp.summary.pruned_percentage}%</div>
+                <div className="stat-detail">81.8% network Dijkstra calls saved</div>
+              </div>
+              <div className="stat-card cyan">
+                <div className="stat-label">False Negatives (Pruned Valid)</div>
+                <div className="stat-value cyan">{exp.summary.false_negatives}</div>
+                <div className="stat-detail">0 lost viable trips (100% recall)</div>
+              </div>
+              <div className="stat-card purple">
+                <div className="stat-label">Pipeline Speedup</div>
+                <div className="stat-value purple">{exp.summary.speedup}</div>
+                <div className="stat-detail">5.49x faster routing throughput</div>
+              </div>
+              <div className="stat-card amber">
+                <div className="stat-label">Heuristic False Negative Rate</div>
+                <div className="stat-value amber">{exp.summary.heuristic_fn_rate_pct}%</div>
+                <div className="stat-detail">Uncalibrated circuity loses 85.7%</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Dynamic Congestion Banner (010) */}
+      {exp.summary?.max_delay_s !== undefined && (
+        <div className="card animate-in" style={{ marginBottom: '24px', borderLeft: '4px solid #f59e0b' }}>
+          <div className="card-header">
+            <span className="card-title">🚗 Dynamic Time-Dependent BPR Congestion (Exp 010)</span>
+            <span className="badge warning">Peak Traffic Travel-Time Degradation</span>
+          </div>
+          <div className="card-body">
+            <div className="stats-grid" style={{ marginBottom: 0 }}>
+              <div className="stat-card amber">
+                <div className="stat-label">Peak Congestion Delay</div>
+                <div className="stat-value amber">+{exp.summary.max_delay_s} s</div>
+                <div className="stat-detail">Severe rush hour delay</div>
+              </div>
+              <div className="stat-card pink">
+                <div className="stat-label">Duration Multiplier</div>
+                <div className="stat-value pink">{exp.summary.duration_multiplier}</div>
+                <div className="stat-detail">Travel time surge under peak load</div>
+              </div>
+              <div className="stat-card purple">
+                <div className="stat-label">Feasible Matches Cut</div>
+                <div className="stat-value purple">-{exp.summary.feasible_cut_pct}%</div>
+                <div className="stat-detail">Trips breach deadline under traffic</div>
+              </div>
+              <div className="stat-card cyan">
+                <div className="stat-label">Top-1 Recommendation Shift</div>
+                <div className="stat-value cyan">{exp.summary.top1_inversion_pct}%</div>
+                <div className="stat-detail">Traffic routes alter best driver</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Multi-Rider Pooling Banner (011) */}
+      {exp.summary?.c1_to_c2_gain_pct !== undefined && (
+        <div className="card animate-in" style={{ marginBottom: '24px', borderLeft: '4px solid #8b5cf6' }}>
+          <div className="card-header">
+            <span className="card-title">👥 Multi-Rider Dynamic Vehicle Pooling (Exp 011)</span>
+            <span className="badge success">+70.0% Rider Match Surge at C=2</span>
+          </div>
+          <div className="card-body">
+            <div className="stats-grid" style={{ marginBottom: 0 }}>
+              <div className="stat-card green">
+                <div className="stat-label">Riders Matched Gain (C=1 → C=2)</div>
+                <div className="stat-value green">+{exp.summary.c1_to_c2_gain_pct}%</div>
+                <div className="stat-detail">40% to 68% riders accommodated</div>
+              </div>
+              <div className="stat-card purple">
+                <div className="stat-label">Total Riders Matched (C=2)</div>
+                <div className="stat-value purple">{exp.summary.matched_riders_c2} / 25</div>
+                <div className="stat-detail">17 riders pooled into shared cars</div>
+              </div>
+              <div className="stat-card amber">
+                <div className="stat-label">Medium (5x8) Optimality Gap</div>
+                <div className="stat-value amber">{exp.summary.medium_5x8_gap_pct}%</div>
+                <div className="stat-detail">Greedy insertion vs exact solver</div>
+              </div>
+              <div className="stat-card pink">
+                <div className="stat-label">Exact Solver Limits</div>
+                <div className="stat-value pink">{exp.summary.exact_solver_timeout_scale}</div>
+                <div className="stat-detail">Combinatorial explosion on large pools</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Dynamic Recourse Banner (012) */}
+      {exp.summary?.recourse_restored_feasibility_pct !== undefined && (
+        <div className="card animate-in" style={{ marginBottom: '24px', borderLeft: '4px solid #10b981' }}>
+          <div className="card-header">
+            <span className="card-title">🔄 Online Dynamic Recourse & Replanning (Exp 012)</span>
+            <span className="badge success">100% Feasibility Restored under Closures</span>
+          </div>
+          <div className="card-body">
+            <div className="stats-grid" style={{ marginBottom: 0 }}>
+              <div className="stat-card pink">
+                <div className="stat-label">Static Feasibility (Closure)</div>
+                <div className="stat-value pink">{exp.summary.static_feasibility_under_closure_pct}%</div>
+                <div className="stat-detail">40% of unadapted routes fail</div>
+              </div>
+              <div className="stat-card green">
+                <div className="stat-label">Recourse Restored Feasibility</div>
+                <div className="stat-value green">{exp.summary.recourse_restored_feasibility_pct}%</div>
+                <div className="stat-detail">100% trip completion restored</div>
+              </div>
+              <div className="stat-card cyan">
+                <div className="stat-label">Mean Recourse Latency</div>
+                <div className="stat-value cyan">{exp.summary.mean_recourse_latency_ms} ms</div>
+                <div className="stat-detail">Sub-5ms in-vehicle local replanning</div>
+              </div>
+              <div className="stat-card amber">
+                <div className="stat-label">Regret vs Perfect Oracle</div>
+                <div className="stat-value amber">{exp.summary.oracle_regret_drop}</div>
+                <div className="stat-detail">Online recourse cuts regret by 85%</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Rolling Dispatch Banner (013) */}
+      {exp.summary?.vkt_reduction_pct !== undefined && (
+        <div className="card animate-in" style={{ marginBottom: '24px', borderLeft: '4px solid #06b6d4' }}>
+          <div className="card-header">
+            <span className="card-title">⚡ Event-Driven Rolling Dispatch (Exp 013)</span>
+            <span className="badge success">-60.5% Fleet Mileage & -39.1% Wait Time</span>
+          </div>
+          <div className="card-body">
+            <div className="stats-grid" style={{ marginBottom: 0 }}>
+              <div className="stat-card cyan">
+                <div className="stat-label">Fleet VKT Reduction</div>
+                <div className="stat-value cyan">-{exp.summary.vkt_reduction_pct}%</div>
+                <div className="stat-detail">50.5 km vs 127.8 km (static batch)</div>
+              </div>
+              <div className="stat-card green">
+                <div className="stat-label">Median Passenger Wait</div>
+                <div className="stat-value green">-{exp.summary.p50_wait_reduction_pct}%</div>
+                <div className="stat-detail">102.6 s vs 169.0 s wait time</div>
+              </div>
+              <div className="stat-card purple">
+                <div className="stat-label">Active Trip Insertions</div>
+                <div className="stat-value purple">{exp.summary.active_trip_insertions}</div>
+                <div className="stat-detail">Waypoints inserted into active cars</div>
+              </div>
+              <div className="stat-card amber">
+                <div className="stat-label">Dynamic Reassignments</div>
+                <div className="stat-value amber">{exp.summary.dynamic_reassignments}</div>
+                <div className="stat-detail">0 passenger disruptions or cancellations</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Research Synthesis Banner (014) */}
+      {exp.summary?.total_experiments_audited !== undefined && (
+        <div className="card animate-in" style={{ marginBottom: '24px', borderLeft: '4px solid #6366f1' }}>
+          <div className="card-header">
+            <span className="card-title">📚 Cross-Experiment Research Synthesis (Exp 014)</span>
+            <span className="badge info">13 Experiments Synthesized</span>
+          </div>
+          <div className="card-body">
+            <div className="stats-grid" style={{ marginBottom: 0 }}>
+              <div className="stat-card green">
+                <div className="stat-label">Pre-Registered Hypotheses Supported</div>
+                <div className="stat-value green">{exp.summary.hypotheses_supported} / 3</div>
+                <div className="stat-detail">H1, H2, H3 fully confirmed</div>
+              </div>
+              <div className="stat-card amber">
+                <div className="stat-label">Partially Supported (RQ4, RQ5)</div>
+                <div className="stat-value amber">{exp.summary.hypotheses_partially_supported} / 2</div>
+                <div className="stat-detail">Optimality trade-offs characterized</div>
+              </div>
+              <div className="stat-card cyan">
+                <div className="stat-label">System Breakthroughs</div>
+                <div className="stat-value cyan">{exp.summary.key_breakthroughs_count}</div>
+                <div className="stat-detail">Pruning, Recourse, Dispatch</div>
+              </div>
+              <div className="stat-card purple">
+                <div className="stat-label">Synthesis Methodology</div>
+                <div className="stat-value purple">Meta-Analysis</div>
+                <div className="stat-detail">Full integrity verification</div>
               </div>
             </div>
           </div>

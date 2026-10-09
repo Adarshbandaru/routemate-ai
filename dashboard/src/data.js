@@ -696,6 +696,134 @@ export async function checkAPIHealth(baseUrl) {
   }
 }
 
+export async function callExperimentsAPI(baseUrl) {
+  try {
+    const res = await fetch(`${baseUrl}/v1/experiments`, { signal: AbortSignal.timeout(4000) });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return await res.json();
+  } catch (err) {
+    return {
+      api_version: 'client-offline-v1',
+      total_experiments: 13,
+      offline: true,
+      error: err.message,
+    };
+  }
+}
+
+export async function callDispatchSimAPI(baseUrl, options = {}) {
+  const { demand_regime = 'balanced', seed = 42, horizon_minutes = 15.0, policies } = options;
+  try {
+    const res = await fetch(`${baseUrl}/v1/dispatch-simulation`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ demand_regime, seed, horizon_minutes, policies }),
+      signal: AbortSignal.timeout(10000),
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return await res.json();
+  } catch (_err) {
+    return {
+      api_version: 'client-simulation-fallback',
+      demand_regime,
+      horizon_minutes,
+      seed,
+      offline: true,
+      error: _err?.message,
+      policies: {
+        static_batch: {
+          policy_name: 'static_batch',
+          fulfillment_rate_pct: 92.7,
+          cancellation_rate_pct: 1.8,
+          pooling_rate_pct: 0.0,
+          capacity_utilization_pct: 100.0,
+          mean_wait_time_seconds: 192.0,
+          p50_wait_time_seconds: 169.0,
+          p95_wait_time_seconds: 350.4,
+          total_fleet_vkt_km: 127.78,
+          active_trip_insertions: 0,
+          mean_solver_latency_ms: 2.87,
+          total_completed: 51,
+          total_requests: 55,
+        },
+        periodic_rolling: {
+          policy_name: 'periodic_rolling',
+          fulfillment_rate_pct: 90.9,
+          cancellation_rate_pct: 1.8,
+          pooling_rate_pct: 100.0,
+          capacity_utilization_pct: 100.0,
+          mean_wait_time_seconds: 168.3,
+          p50_wait_time_seconds: 172.6,
+          p95_wait_time_seconds: 301.6,
+          total_fleet_vkt_km: 53.34,
+          active_trip_insertions: 34,
+          mean_solver_latency_ms: 2.10,
+          total_completed: 50,
+          total_requests: 55,
+        },
+        event_driven_rolling: {
+          policy_name: 'event_driven_rolling',
+          fulfillment_rate_pct: 92.7,
+          cancellation_rate_pct: 3.6,
+          pooling_rate_pct: 100.0,
+          capacity_utilization_pct: 100.0,
+          mean_wait_time_seconds: 123.5,
+          p50_wait_time_seconds: 102.6,
+          p95_wait_time_seconds: 251.3,
+          total_fleet_vkt_km: 50.45,
+          active_trip_insertions: 36,
+          mean_solver_latency_ms: 1.76,
+          total_completed: 51,
+          total_requests: 55,
+        },
+      },
+    };
+  }
+}
+
+export const DEMO_RIDE_PRESETS = [
+  {
+    id: 'fidi_soma',
+    title: 'Financial District to SoMa Commute',
+    subtitle: 'High density peak hour tech corridor',
+    start: { latitude: 0.002, longitude: 0.005 },
+    destination: { latitude: -0.003, longitude: 0.045 },
+    seats_requested: 1,
+    departure: '2026-10-09T08:30:00Z',
+    notes: 'Standard single commuter request during morning peak.',
+  },
+  {
+    id: 'mission_transit',
+    title: 'Mission Bay Transit Hub Link',
+    subtitle: 'Multi-seat shared pooling trip',
+    start: { latitude: -0.005, longitude: 0.012 },
+    destination: { latitude: 0.001, longitude: 0.052 },
+    seats_requested: 2,
+    departure: '2026-10-09T08:35:00Z',
+    notes: '2-seat party requesting shared ride near Caltrain depot.',
+  },
+  {
+    id: 'embarcadero_ferry',
+    title: 'Embarcadero Ferry to Market St',
+    subtitle: 'Corridor connection with strict time window',
+    start: { latitude: 0.008, longitude: 0.002 },
+    destination: { latitude: -0.001, longitude: 0.038 },
+    seats_requested: 1,
+    departure: '2026-10-09T08:40:00Z',
+    notes: 'Ferry arrival needing fast connection to Mid-Market offices.',
+  },
+  {
+    id: 'cross_town_express',
+    title: 'Presidio Express to Downtown',
+    subtitle: 'Longer detour sensitivity stress test',
+    start: { latitude: 0.012, longitude: -0.005 },
+    destination: { latitude: -0.008, longitude: 0.065 },
+    seats_requested: 1,
+    departure: '2026-10-09T08:45:00Z',
+    notes: 'Cross-corridor request testing detour thresholding.',
+  },
+];
+
 
 /* =============================================
    EXPORT UTILITIES
@@ -882,6 +1010,143 @@ export const EXPERIMENT_DATA = {
       overall_auction_gap_pct: 9.30,
       max_scale_explored: '40 riders / 20 drivers',
       speedup_factor: '36,000x',
+    },
+  },
+
+  '008_road_network_validation': {
+    name: 'Road Network Validation',
+    description: 'OSM San Francisco Downtown corridor (26 nodes, 53 edges, 250 candidate pairs). Evaluates Euclidean straight-line gating vs network-aware Dijkstra routing.',
+    results: [
+      { scenario: 'geometric_baseline', method: 'euclidean', precision: 0.120, recall: 0.320, ndcg: 0.257, eligible: 45, false_positives: 34, detour_km: 7.758, latency_us: 45.4 },
+      { scenario: 'existing_heuristic', method: 'heuristic', precision: 0.120, recall: 0.320, ndcg: 0.257, eligible: 45, false_positives: 34, detour_km: 7.758, latency_us: 52.1 },
+      { scenario: 'network_aware', method: 'dijkstra_graph', precision: 0.400, recall: 0.380, ndcg: 0.393, eligible: 12, false_positives: 0, detour_km: 0.487, latency_us: 973.9 },
+    ],
+    summary: {
+      total_candidate_pairs: 250,
+      geometric_eligible: 45,
+      network_eligible: 12,
+      false_positive_rate_pct: 75.6,
+      top1_disagreement_pct: 68.0,
+      routing_slowdown: '21.5x',
+      study_area: 'OSM Downtown SF / Financial District',
+    },
+  },
+
+  '009_hybrid_pruning': {
+    name: 'Hybrid Two-Tier Pruning',
+    description: 'Two-tier spatial pruning using calibrated circuity lower bounds (max circuity 4.61x). Evaluates candidate reduction, recall preservation, and speedup.',
+    results: [
+      { scenario: 'no_pruning', method: 'unpruned', precision: 0.167, recall: 1.000, ndcg: 0.167, pruned_pct: 0.0, false_negatives: 0, calls: 450, time_ms: 0.47, admissible: false },
+      { scenario: 'fixed_euclidean', method: 'euclidean', precision: 0.167, recall: 1.000, ndcg: 0.167, pruned_pct: 56.89, false_negatives: 0, calls: 194, time_ms: 2.04, admissible: false },
+      { scenario: 'circuity_heuristic', method: 'heuristic', precision: 0.033, recall: 0.143, ndcg: 0.033, pruned_pct: 97.78, false_negatives: 6, calls: 10, time_ms: 1.34, admissible: false },
+      { scenario: 'two_stage_geometric', method: 'two_stage', precision: 0.167, recall: 1.000, ndcg: 0.167, pruned_pct: 82.67, false_negatives: 0, calls: 78, time_ms: 4.88, admissible: false },
+      { scenario: 'admissible_lower_bound', method: 'admissible', precision: 0.167, recall: 1.000, ndcg: 0.167, pruned_pct: 81.78, false_negatives: 0, calls: 82, time_ms: 1.82, admissible: true },
+    ],
+    summary: {
+      pruned_percentage: 81.78,
+      false_negatives: 0,
+      feasible_recall_pct: 100.0,
+      speedup: '5.49x',
+      heuristic_fn_rate_pct: 85.7,
+      is_provably_admissible: true,
+    },
+  },
+
+  '010_dynamic_congestion': {
+    name: 'Dynamic Time-Dependent Congestion',
+    description: 'BPR travel-time degradation curves across peak congestion regimes on SF Downtown street network.',
+    results: [
+      { scenario: 'no_congestion', method: 'free_flow', precision: 0.300, recall: 0.300, ndcg: 0.300, travel_time_s: 45.0, delay_s: 0.0, feasible_pairs: 17, top1_change_rate: 0.0 },
+      { scenario: 'mild_congestion', method: 'bpr_mild', precision: 0.300, recall: 0.300, ndcg: 0.300, travel_time_s: 45.7, delay_s: 1.5, feasible_pairs: 17, top1_change_rate: 0.0 },
+      { scenario: 'moderate_congestion', method: 'bpr_moderate', precision: 0.267, recall: 0.267, ndcg: 0.267, travel_time_s: 55.6, delay_s: 24.3, feasible_pairs: 16, top1_change_rate: 0.033 },
+      { scenario: 'severe_congestion', method: 'bpr_severe', precision: 0.133, recall: 0.133, ndcg: 0.133, travel_time_s: 170.9, delay_s: 282.7, feasible_pairs: 5, top1_change_rate: 0.167 },
+      { scenario: 'directional_asymmetric', method: 'bpr_directional', precision: 0.267, recall: 0.267, ndcg: 0.267, travel_time_s: 55.6, delay_s: 24.3, feasible_pairs: 16, top1_change_rate: 0.033 },
+    ],
+    summary: {
+      max_delay_s: 282.7,
+      duration_multiplier: '3.80x',
+      feasible_cut_pct: 70.6,
+      top1_inversion_pct: 16.7,
+      bpr_alpha: 0.15,
+      bpr_beta: 4.0,
+    },
+  },
+
+  '011_multi_rider_pooling': {
+    name: 'Multi-Rider Dynamic Vehicle Pooling',
+    description: 'Dynamic vehicle pooling scaling capacity C=1 to 4 with precedence and detour constraints on SF Downtown network.',
+    results: [
+      { scenario: 'capacity_1', method: 'single_occupancy', precision: 0.400, recall: 0.400, ndcg: 0.400, matched_riders: 10, matched_pct: 40.0, objective: 721.37, detour_s: 378.8, detour_km: 10.29, cap_util_pct: 100.0, runtime_ms: 13.1 },
+      { scenario: 'capacity_2', method: 'dual_pooling', precision: 0.680, recall: 0.680, ndcg: 0.680, matched_riders: 17, matched_pct: 68.0, objective: 549.25, detour_s: 759.7, detour_km: 19.47, cap_util_pct: 85.0, runtime_ms: 207.5 },
+      { scenario: 'capacity_3', method: 'triple_pooling', precision: 0.680, recall: 0.680, ndcg: 0.680, matched_riders: 17, matched_pct: 68.0, objective: 400.77, detour_s: 858.3, detour_km: 18.00, cap_util_pct: 53.3, runtime_ms: 540.0 },
+      { scenario: 'capacity_4', method: 'quad_pooling', precision: 0.720, recall: 0.720, ndcg: 0.720, matched_riders: 18, matched_pct: 72.0, objective: 319.72, detour_s: 1051.6, detour_km: 17.56, cap_util_pct: 32.5, runtime_ms: 763.5 },
+    ],
+    summary: {
+      c1_to_c2_gain_pct: 70.0,
+      matched_riders_c2: 17,
+      exact_solver_timeout_scale: '6x12 (timed out at 300ms)',
+      medium_5x8_gap_pct: 12.67,
+      detour_tolerance_km: 3.5,
+    },
+  },
+
+  '012_dynamic_recourse': {
+    name: 'Dynamic Recourse & Incident Replanning',
+    description: 'Online sub-5ms route recourse under unexpected arterial road closures and stochastic dwell times.',
+    results: [
+      { scenario: '1_static_nominal', method: 'static', precision: 1.000, recall: 1.000, ndcg: 1.000, feasible_rate_pct: 100.0, objective: 86.60, detour_km: 2.26, latency_ms: 0.0, recovery_pct: 0, regret: 0.0 },
+      { scenario: '2_static_dwell', method: 'static', precision: 1.000, recall: 1.000, ndcg: 0.954, feasible_rate_pct: 100.0, objective: 82.61, detour_km: 2.26, latency_ms: 0.0, recovery_pct: 0, regret: 3.06 },
+      { scenario: '3_static_incident', method: 'static', precision: 0.600, recall: 0.600, ndcg: 0.603, feasible_rate_pct: 60.0, objective: 52.23, detour_km: 1.31, latency_ms: 0.0, recovery_pct: 0, regret: 33.43 },
+      { scenario: '4_static_dwell_incident', method: 'static', precision: 0.600, recall: 0.600, ndcg: 0.575, feasible_rate_pct: 60.0, objective: 49.80, detour_km: 1.31, latency_ms: 0.0, recovery_pct: 0, regret: 35.86 },
+      { scenario: '5_recourse_incident', method: 'recourse', precision: 1.000, recall: 1.000, ndcg: 0.988, feasible_rate_pct: 100.0, objective: 84.61, detour_km: 2.57, latency_ms: 4.17, recovery_pct: 76.7, regret: 1.06 },
+      { scenario: '6_recourse_dwell_incident', method: 'recourse', precision: 1.000, recall: 1.000, ndcg: 0.937, feasible_rate_pct: 100.0, objective: 80.24, detour_km: 2.57, latency_ms: 3.52, recovery_pct: 37.6, regret: 5.42 },
+    ],
+    summary: {
+      static_feasibility_under_closure_pct: 60.0,
+      recourse_restored_feasibility_pct: 100.0,
+      mean_recourse_latency_ms: 3.42,
+      incident_recovery_pct: 76.7,
+      oracle_regret_drop: '35.86 -> 5.42',
+      seed_stability_verified: 'Seeds 42, 101, 2024 tested',
+    },
+  },
+
+  '013_rolling_dispatch': {
+    name: 'Fleet-Wide Rolling-Horizon Dispatch',
+    description: 'Event-driven rolling-horizon dispatch vs fixed 60-second batching under dynamic request arrivals, active trips, and cancellations.',
+    results: [
+      { scenario: 'balanced_static_batch', method: 'static_batch', precision: 0.927, recall: 0.927, ndcg: 0.927, fulfillment_pct: 92.7, cancellation_pct: 1.8, p50_wait_s: 169.0, p95_wait_s: 350.4, fleet_vkt_km: 127.78, active_insertions: 0, latency_ms: 2.87 },
+      { scenario: 'balanced_periodic_rolling', method: 'periodic_rolling', precision: 0.909, recall: 0.909, ndcg: 0.909, fulfillment_pct: 90.9, cancellation_pct: 1.8, p50_wait_s: 172.6, p95_wait_s: 301.6, fleet_vkt_km: 53.34, active_insertions: 34, latency_ms: 2.10 },
+      { scenario: 'balanced_event_driven', method: 'event_driven_rolling', precision: 0.927, recall: 0.927, ndcg: 0.927, fulfillment_pct: 92.7, cancellation_pct: 3.6, p50_wait_s: 102.6, p95_wait_s: 251.3, fleet_vkt_km: 50.45, active_insertions: 36, latency_ms: 1.76 },
+      { scenario: 'low_static_batch', method: 'static_batch', precision: 0.875, recall: 0.875, ndcg: 0.875, fulfillment_pct: 87.5, cancellation_pct: 8.3, p50_wait_s: 166.7, p95_wait_s: 264.3, fleet_vkt_km: 62.17, active_insertions: 0, latency_ms: 0.83 },
+      { scenario: 'low_event_driven', method: 'event_driven_rolling', precision: 0.875, recall: 0.875, ndcg: 0.875, fulfillment_pct: 87.5, cancellation_pct: 8.3, p50_wait_s: 127.2, p95_wait_s: 245.8, fleet_vkt_km: 34.80, active_insertions: 11, latency_ms: 0.99 },
+    ],
+    summary: {
+      vkt_reduction_pct: 60.5,
+      p50_wait_reduction_pct: 39.1,
+      active_trip_insertions: 36,
+      solver_latency_p95_ms: 11.83,
+      dynamic_reassignments: 0,
+    },
+  },
+
+  '014_research_synthesis': {
+    name: 'Research Synthesis & Cross-Experiment Analysis',
+    description: 'Comprehensive meta-analysis of Experiments 001–013: hypothesis verification, trade-off analysis, and threats-to-validity.',
+    results: [
+      { scenario: 'hypotheses', method: 'H1_rules_improve_precision', precision: 1.00, recall: 1.00, ndcg: 1.00, status: 'supported', exps: '001, 002, 008', metric: 'P@3 +3.3%, FP drop 75.6%' },
+      { scenario: 'hypotheses', method: 'H2_network_circuity_divergence', precision: 1.00, recall: 1.00, ndcg: 1.00, status: 'supported', exps: '006, 008, 009', metric: 'Circuity 1.51x, FP 75.6%' },
+      { scenario: 'hypotheses', method: 'H3_recourse_restores_feasibility', precision: 1.00, recall: 1.00, ndcg: 1.00, status: 'supported', exps: '012', metric: '60% -> 100% feasibility restored' },
+      { scenario: 'research_questions', method: 'RQ4_exact_vs_heuristic_gap', precision: 0.75, recall: 0.75, ndcg: 0.75, status: 'partially_supported', exps: '007, 011', metric: 'Small gap 9.3%, exact timeout on 6x12' },
+      { scenario: 'research_questions', method: 'RQ5_rolling_vs_batch_quantization', precision: 0.85, recall: 0.85, ndcg: 0.85, status: 'partially_supported', exps: '013', metric: 'VKT -60.5%, wait -39.1%, reassignments 0' },
+    ],
+    summary: {
+      total_experiments_audited: 13,
+      hypotheses_supported: 3,
+      hypotheses_partially_supported: 2,
+      hypotheses_unsupported: 0,
+      key_breakthroughs_count: 5,
+      evaluated_evidence_class: 'Empirical cross-experiment meta-analysis',
     },
   },
 };

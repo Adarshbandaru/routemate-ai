@@ -1,7 +1,15 @@
 import json, tempfile, unittest
 from datetime import datetime, timezone
 from pathlib import Path
-from routemate.api import batch_assignment, match, road_benchmark_summary, compute_route
+from routemate.api import (
+    batch_assignment,
+    match,
+    road_benchmark_summary,
+    compute_route,
+    get_experiments_summary,
+    get_experiment_detail,
+    simulate_dispatch,
+)
 from routemate.ml import LogisticRanker, FEATURE_NAMES
 
 def journey(identifier, x=0.0, verified=True, capacity=2):
@@ -100,6 +108,33 @@ class ApiTests(unittest.TestCase):
         self.assertEqual(res["provider"], "geometric-synthetic")
         self.assertGreater(res["distance_km"], 0)
         self.assertEqual(len(res["route"]), 2)
+
+    def test_experiments_summary_api(self):
+        res = get_experiments_summary()
+        self.assertEqual(res["api_version"], "local-api-v1")
+        self.assertEqual(res["total_experiments"], 13)
+        self.assertEqual(len(res["experiments"]), 13)
+        self.assertIn("key_system_breakthroughs", res["conclusions_summary"])
+
+    def test_experiment_detail_api(self):
+        res = get_experiment_detail("013_rolling_dispatch")
+        self.assertIsNotNone(res)
+        self.assertEqual(res["api_version"], "local-api-v1")
+        self.assertEqual(res["experiment"]["id"], "013_rolling_dispatch")
+
+    def test_simulate_dispatch_api(self):
+        payload = {
+            "demand_regime": "balanced",
+            "horizon_minutes": 60.0,
+            "seed": 42,
+            "policies": ["static_batch", "event_driven_rolling"],
+        }
+        res = simulate_dispatch(payload)
+        self.assertEqual(res["api_version"], "local-api-v1")
+        self.assertIn("static_batch", res["policies"])
+        self.assertIn("event_driven_rolling", res["policies"])
+        self.assertEqual(res["policies"]["event_driven_rolling"]["total_fleet_vkt_km"], 50.45)
+        self.assertEqual(res["policies"]["static_batch"]["total_fleet_vkt_km"], 127.78)
 
 
 if __name__ == "__main__": unittest.main()

@@ -2,6 +2,8 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import {
   generateSyntheticScenario,
   generateBatchScenario,
+  runMatchingPipeline,
+  runBatchAssignment,
   callMatchAPI,
   callBatchAPI,
   checkAPIHealth,
@@ -22,6 +24,7 @@ export default function LiveAPI() {
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
   const [requestLog, setRequestLog] = useState([]);
+  const [useLocalFallback, setUseLocalFallback] = useState(false);
   const pollRef = useRef(null);
 
   const checkHealth = useCallback(async () => {
@@ -31,15 +34,21 @@ export default function LiveAPI() {
   }, [apiUrl]);
 
   useEffect(() => {
-    checkHealth();
-  }, [checkHealth]);
+    let ignore = false;
+    checkAPIHealth(apiUrl).then((h) => {
+      if (!ignore) setHealth(h);
+    });
+    return () => { ignore = true; };
+  }, [apiUrl]);
 
   useEffect(() => {
     if (polling) {
-      pollRef.current = setInterval(() => checkHealth(), 5000);
+      pollRef.current = setInterval(() => {
+        checkAPIHealth(apiUrl).then((h) => setHealth(h));
+      }, 5000);
     }
     return () => { if (pollRef.current) clearInterval(pollRef.current); };
-  }, [polling, checkHealth]);
+  }, [polling, apiUrl]);
 
   const sendRequest = useCallback(async () => {
     setLoading(true);
@@ -49,13 +58,42 @@ export default function LiveAPI() {
       let res;
       if (endpoint === 'matches') {
         const { rider, drivers } = generateSyntheticScenario(seed, driverCount);
-        res = await callMatchAPI(apiUrl, rider, drivers, topK);
+        if (useLocalFallback) {
+          const pipeline = runMatchingPipeline(rider, drivers);
+          res = {
+            api_version: 'client-simulator-v1',
+            rank_method: 'route_time_heuristic',
+            top_k: topK,
+            retrieved_count: pipeline.retrieved_count,
+            eligible_count: pipeline.eligible.length,
+            recommendations: pipeline.eligible.slice(0, topK).map((d, idx) => ({
+              driver_id: d.driver_id,
+              rank: idx + 1,
+              score: d.score / 100.0,
+              explanation: {
+                features: d.features,
+                reasons: ['passed all mandatory feasibility checks'],
+              },
+            })),
+            feasibility_matrix: pipeline.all.map((d) => ({
+              driver_id: d.driver_id,
+              final_eligible: d.final_eligible,
+              checks: d.checks,
+              features: d.features,
+              score: d.score,
+              rejection_reasons: d.rejection_reasons,
+            })),
+            timing_seconds: { retrieval: 0.001, features: 0.002, filtering: 0.001 },
+          };
+        } else {
+          res = await callMatchAPI(apiUrl, rider, drivers, topK);
+        }
         const latency = Math.round(performance.now() - t0);
         setResult({ type: 'matches', ...res });
         setRequestLog((prev) => [
           {
             timestamp: new Date().toISOString(),
-            endpoint: '/v1/matches',
+            endpoint: useLocalFallback ? '/v1/matches (client sim)' : '/v1/matches',
             seed,
             driverCount,
             latencyMs: latency,
@@ -66,13 +104,36 @@ export default function LiveAPI() {
         ]);
       } else {
         const { riders, drivers } = generateBatchScenario(seed, riderCount, driverCount);
-        res = await callBatchAPI(apiUrl, riders, drivers, batchMethod);
+        if (useLocalFallback) {
+          const batchRes = runBatchAssignment(riders, drivers, batchMethod);
+          res = {
+            api_version: 'client-simulator-v1',
+            method: batchMethod,
+            matched_rider_count: batchRes.matchedRiders,
+            matched_driver_count: batchRes.matchedDrivers,
+            objective_value: batchRes.objectiveValue,
+            total_pairs: batchRes.totalPairs,
+            feasible_edges: batchRes.feasibleEdges,
+            unmatched_rider_ids: batchRes.unmatchedRiders,
+            unmatched_driver_ids: batchRes.unmatchedDrivers,
+            groups: batchRes.groups.map((g) => ({
+              driver_id: g.driver_id,
+              rider_ids: g.rider_ids,
+              seats_used: g.seatsUsed,
+              remaining_capacity: g.remainingCapacity,
+              group_score: g.groupScore,
+            })),
+            timing_seconds: { graph: batchRes.graphMs / 1000.0, solve: batchRes.solveMs / 1000.0 },
+          };
+        } else {
+          res = await callBatchAPI(apiUrl, riders, drivers, batchMethod);
+        }
         const latency = Math.round(performance.now() - t0);
         setResult({ type: 'assignments', ...res });
         setRequestLog((prev) => [
           {
             timestamp: new Date().toISOString(),
-            endpoint: '/v1/assignments',
+            endpoint: useLocalFallback ? '/v1/assignments (client sim)' : '/v1/assignments',
             seed,
             driverCount: `${riderCount}R / ${driverCount}D`,
             latencyMs: latency,
@@ -100,7 +161,7 @@ export default function LiveAPI() {
     } finally {
       setLoading(false);
     }
-  }, [apiUrl, endpoint, seed, riderCount, driverCount, topK, batchMethod]);
+  }, [apiUrl, endpoint, seed, riderCount, driverCount, topK, batchMethod, useLocalFallback]);
 
   return (
     <div className="animate-in" id="live-api-view">
@@ -110,10 +171,32 @@ export default function LiveAPI() {
           Connect to the RouteMate Python HTTP API for real-time 1-to-N matching and multi-rider batch assignment.
           Start the local server with{' '}
           <code style={{ background: 'rgba(99,102,241,0.1)', padding: '2px 6px', borderRadius: '4px', color: '#818cf8', fontSize: '0.75rem' }}>
-            py -m routemate.api
+            uv run routemate-api --port 8000
           </code>
         </p>
       </div>
+
+      {/* Offline Notice Banner */}
+      {!health?.online && (
+        <div style={{ background: 'rgba(239, 68, 68, 0.08)', border: '1px solid rgba(239, 68, 68, 0.3)', borderRadius: '8px', padding: '14px', marginBottom: '20px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
+            <div>
+              <div style={{ fontWeight: 600, color: '#ef4444', marginBottom: '4px' }}>
+                ⚠️ Backend API Server is Offline ({apiUrl})
+              </div>
+              <div style={{ fontSize: '0.8125rem', color: 'var(--text-secondary)' }}>
+                Start the local API with <code>uv run routemate-api --port 8000</code> or toggle In-Browser Simulation mode below.
+              </div>
+            </div>
+            <button
+              className={`btn btn-sm ${useLocalFallback ? 'btn-primary' : 'btn-outline'}`}
+              onClick={() => setUseLocalFallback(!useLocalFallback)}
+            >
+              {useLocalFallback ? '✓ In-Browser Engine Active' : '⚡ Use In-Browser Engine'}
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Connection panel */}
       <div className="card" style={{ marginBottom: '24px' }}>
@@ -145,6 +228,13 @@ export default function LiveAPI() {
               onClick={() => setPolling(!polling)}
             >
               {polling ? '⏸️ Stop Auto-Poll' : '📡 Auto-Poll (5s)'}
+            </button>
+            <button
+              className={`btn btn-sm ${useLocalFallback ? 'btn-primary' : 'btn-ghost'}`}
+              onClick={() => setUseLocalFallback(!useLocalFallback)}
+              title="Execute matching logic inside the browser without HTTP backend"
+            >
+              {useLocalFallback ? '💻 Client Sim: ON' : '💻 Client Sim: OFF'}
             </button>
           </div>
         </div>
