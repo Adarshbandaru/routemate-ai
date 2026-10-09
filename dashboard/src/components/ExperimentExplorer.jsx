@@ -269,19 +269,19 @@ export default function ExperimentExplorer() {
       <div className="section-header">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '8px' }}>
           <div>
-            <h2 className="section-title">📊 Experiment Explorer</h2>
+            <h2 className="section-title">Experiment Explorer</h2>
             <p className="section-desc">
-              Compare ranking algorithms and routing methods across controlled synthetic benchmarks and road network experiments.
+              Compare ranking algorithms and routing methods across controlled synthetic benchmarks and OpenStreetMap road network experiments.
             </p>
           </div>
-          <span className="badge warning" style={{ padding: '4px 10px', fontSize: '11px' }}>
-            🔬 Controlled Synthetic Micro-Simulation
+          <span className="badge neutral" style={{ padding: '3px 8px' }}>
+            Controlled Synthetic Benchmarks
           </span>
         </div>
       </div>
 
       {/* Category Filter Tabs */}
-      <div style={{ display: 'flex', gap: '8px', marginBottom: '16px', flexWrap: 'wrap' }}>
+      <div style={{ display: 'flex', gap: '6px', marginBottom: '14px', flexWrap: 'wrap' }}>
         {CATEGORIES.map((c) => (
           <button
             key={c.id}
@@ -301,7 +301,7 @@ export default function ExperimentExplorer() {
       </div>
 
       {/* Experiment selector chips */}
-      <div style={{ display: 'flex', gap: '8px', marginBottom: '24px', flexWrap: 'wrap', alignItems: 'center' }}>
+      <div style={{ display: 'flex', gap: '6px', marginBottom: '18px', flexWrap: 'wrap', alignItems: 'center' }}>
         <div className="experiment-selector">
           {visibleExpKeys.map((key) => {
             const val = EXPERIMENT_DATA[key];
@@ -320,9 +320,9 @@ export default function ExperimentExplorer() {
 
       {/* Road Network Summary Banner (006) */}
       {exp.summary?.mean_circuity && (
-        <div className="card animate-in" style={{ marginBottom: '24px', borderLeft: '4px solid #10b981' }}>
+        <div className="card animate-in" style={{ marginBottom: '18px', borderLeft: '3px solid #10b981' }}>
           <div className="card-header">
-            <span className="card-title">🗺️ Road Network Circuity Benchmark Summary</span>
+            <span className="card-title">Road Network Circuity Benchmark Summary (Exp 006)</span>
             <span className="badge success">30 OD Pairs Evaluated</span>
           </div>
           <div className="card-body">
@@ -354,9 +354,9 @@ export default function ExperimentExplorer() {
 
       {/* Assignment Scaling Summary Banner (007) */}
       {exp.summary?.overall_greedy_gap_pct !== undefined && (
-        <div className="card animate-in" style={{ marginBottom: '24px', borderLeft: '4px solid #06b6d4' }}>
+        <div className="card animate-in" style={{ marginBottom: '18px', borderLeft: '3px solid #06b6d4' }}>
           <div className="card-header">
-            <span className="card-title">⚡ Multi-Rider Assignment Scaling & Optimality Summary</span>
+            <span className="card-title">Multi-Rider Assignment Scaling & Optimality Summary (Exp 007)</span>
             <span className="badge success">15 Cohort Instances Evaluated</span>
           </div>
           <div className="card-body">
@@ -388,9 +388,9 @@ export default function ExperimentExplorer() {
 
       {/* Road Network Validation Banner (008) */}
       {exp.summary?.false_positive_rate_pct !== undefined && (
-        <div className="card animate-in" style={{ marginBottom: '24px', borderLeft: '4px solid #ef4444' }}>
+        <div className="card animate-in" style={{ marginBottom: '18px', borderLeft: '3px solid #ef4444' }}>
           <div className="card-header">
-            <span className="card-title">🏙️ OSM Downtown SF Road Validation (Exp 008)</span>
+            <span className="card-title">OSM Downtown SF Road Validation (Exp 008)</span>
             <span className="badge danger">75.6% Euclidean False Positives</span>
           </div>
           <div className="card-body">
@@ -422,9 +422,9 @@ export default function ExperimentExplorer() {
 
       {/* Hybrid Pruning Banner (009) */}
       {exp.summary?.pruned_percentage !== undefined && (
-        <div className="card animate-in" style={{ marginBottom: '24px', borderLeft: '4px solid #10b981' }}>
+        <div className="card animate-in" style={{ marginBottom: '18px', borderLeft: '3px solid #10b981' }}>
           <div className="card-header">
-            <span className="card-title">✂️ Two-Tier Admissible Pruning (Exp 009)</span>
+            <span className="card-title">Two-Tier Admissible Pruning (Exp 009)</span>
             <span className="badge success">100% Feasible Recall Preserved</span>
           </div>
           <div className="card-body">
@@ -456,9 +456,9 @@ export default function ExperimentExplorer() {
 
       {/* Dynamic Congestion Banner (010) */}
       {exp.summary?.max_delay_s !== undefined && (
-        <div className="card animate-in" style={{ marginBottom: '24px', borderLeft: '4px solid #f59e0b' }}>
+        <div className="card animate-in" style={{ marginBottom: '18px', borderLeft: '3px solid #f59e0b' }}>
           <div className="card-header">
-            <span className="card-title">🚗 Dynamic Time-Dependent BPR Congestion (Exp 010)</span>
+            <span className="card-title">Dynamic Time-Dependent BPR Congestion (Exp 010)</span>
             <span className="badge warning">Peak Traffic Travel-Time Degradation</span>
           </div>
           <div className="card-body">
@@ -490,9 +490,9 @@ export default function ExperimentExplorer() {
 
       {/* Multi-Rider Pooling Banner (011) */}
       {exp.summary?.c1_to_c2_gain_pct !== undefined && (
-        <div className="card animate-in" style={{ marginBottom: '24px', borderLeft: '4px solid #8b5cf6' }}>
+        <div className="card animate-in" style={{ marginBottom: '18px', borderLeft: '3px solid #8b5cf6' }}>
           <div className="card-header">
-            <span className="card-title">👥 Multi-Rider Dynamic Vehicle Pooling (Exp 011)</span>
+            <span className="card-title">Multi-Rider Dynamic Vehicle Pooling (Exp 011)</span>
             <span className="badge success">+70.0% Rider Match Surge at C=2</span>
           </div>
           <div className="card-body">
@@ -524,9 +524,9 @@ export default function ExperimentExplorer() {
 
       {/* Dynamic Recourse Banner (012) */}
       {exp.summary?.recourse_restored_feasibility_pct !== undefined && (
-        <div className="card animate-in" style={{ marginBottom: '24px', borderLeft: '4px solid #10b981' }}>
+        <div className="card animate-in" style={{ marginBottom: '18px', borderLeft: '3px solid #10b981' }}>
           <div className="card-header">
-            <span className="card-title">🔄 Online Dynamic Recourse & Replanning (Exp 012)</span>
+            <span className="card-title">Online Dynamic Recourse & Replanning (Exp 012)</span>
             <span className="badge success">100% Feasibility Restored under Closures</span>
           </div>
           <div className="card-body">
@@ -558,9 +558,9 @@ export default function ExperimentExplorer() {
 
       {/* Rolling Dispatch Banner (013) */}
       {exp.summary?.vkt_reduction_pct !== undefined && (
-        <div className="card animate-in" style={{ marginBottom: '24px', borderLeft: '4px solid #06b6d4' }}>
+        <div className="card animate-in" style={{ marginBottom: '18px', borderLeft: '3px solid #06b6d4' }}>
           <div className="card-header">
-            <span className="card-title">⚡ Event-Driven Rolling Dispatch (Exp 013)</span>
+            <span className="card-title">Event-Driven Rolling Dispatch (Exp 013)</span>
             <span className="badge success">-60.5% Fleet Mileage & -39.1% Wait Time</span>
           </div>
           <div className="card-body">
@@ -592,9 +592,9 @@ export default function ExperimentExplorer() {
 
       {/* Research Synthesis Banner (014) */}
       {exp.summary?.total_experiments_audited !== undefined && (
-        <div className="card animate-in" style={{ marginBottom: '24px', borderLeft: '4px solid #6366f1' }}>
+        <div className="card animate-in" style={{ marginBottom: '18px', borderLeft: '3px solid #6366f1' }}>
           <div className="card-header">
-            <span className="card-title">📚 Cross-Experiment Research Synthesis (Exp 014)</span>
+            <span className="card-title">Cross-Experiment Research Synthesis (Exp 014)</span>
             <span className="badge info">13 Experiments Synthesized</span>
           </div>
           <div className="card-body">
@@ -641,11 +641,11 @@ export default function ExperimentExplorer() {
         {/* Controls */}
         <div className="card">
           <div className="card-header">
-            <span className="card-title">⚙️ Configuration</span>
+            <span className="card-title">Configuration & Scope</span>
           </div>
-          <div className="card-body" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <div className="card-body" style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
             <div className="form-group">
-              <label className="form-label">Metric</label>
+              <label className="form-label">Evaluation Metric</label>
               <select className="form-select" value={metric} onChange={(e) => setMetric(e.target.value)}>
                 <option value="precision">Precision@3</option>
                 <option value="recall">Recall@3</option>
@@ -654,40 +654,40 @@ export default function ExperimentExplorer() {
               </select>
             </div>
             <div className="form-group">
-              <label className="form-label">Scenario</label>
+              <label className="form-label">Corridor Scenario</label>
               <select className="form-select" value={scenario} onChange={(e) => setScenario(e.target.value)}>
                 <option value="all">All scenarios</option>
                 {scenarios.map((s) => (
-                  <option key={s} value={s}>{s} ({exp.results.find(r => r.scenario === s)?.candidates || '?'} drivers)</option>
+                  <option key={s} value={s}>{s} ({exp.results.find(r => r.scenario === s)?.candidates || '?'} candidates)</option>
                 ))}
               </select>
             </div>
             <div className="form-group">
-              <label className="form-label">View</label>
+              <label className="form-label">Visualization View</label>
               <div className="experiment-selector" style={{ gap: '4px' }}>
                 {[
-                  { id: 'chart', label: '📊 Bars' },
-                  { id: 'table', label: '📋 Table' },
-                  { id: 'heatmap', label: '🔥 Heatmap' },
-                  { id: 'radar', label: '🕸️ Radar' },
+                  { id: 'chart', label: 'Bar Chart' },
+                  { id: 'table', label: 'Data Table' },
+                  { id: 'heatmap', label: 'Matrix Heatmap' },
+                  { id: 'radar', label: 'Radar Profile' },
                 ].map((v) => (
                   <button key={v.id}
                     className={`experiment-chip ${viewMode === v.id ? 'active' : ''}`}
                     onClick={() => setViewMode(v.id)}
-                    style={{ fontSize: '11px', padding: '4px 10px' }}>
+                    style={{ fontSize: '11px', padding: '3px 8px' }}>
                     {v.label}
                   </button>
                 ))}
               </div>
             </div>
 
-            <div style={{ padding: '12px', background: 'rgba(99,102,241,0.06)', borderRadius: '8px', border: '1px solid rgba(99,102,241,0.15)' }}>
-              <div style={{ fontSize: '0.6875rem', color: '#94a3b8', marginBottom: '6px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>About</div>
-              <p style={{ fontSize: '0.8125rem', color: '#64748b', lineHeight: 1.5, margin: 0 }}>{exp.description}</p>
+            <div style={{ padding: '10px 12px', background: 'var(--bg-hover)', borderRadius: 'var(--radius-xs)', border: '1px solid var(--border-subtle)' }}>
+              <div style={{ fontSize: '0.6875rem', color: 'var(--text-muted)', marginBottom: '4px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Experiment Scope</div>
+              <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', lineHeight: 1.45, margin: 0 }}>{exp.description}</p>
             </div>
 
-            <button className="btn btn-ghost" onClick={handleExport} style={{ alignSelf: 'flex-start' }}>
-              📥 Export CSV
+            <button className="btn btn-outline" onClick={handleExport} style={{ alignSelf: 'flex-start' }}>
+              Export CSV
             </button>
           </div>
         </div>
@@ -696,8 +696,7 @@ export default function ExperimentExplorer() {
         <div className="card">
           <div className="card-header">
             <span className="card-title">
-              {viewMode === 'chart' ? '📈' : viewMode === 'table' ? '📋' : viewMode === 'heatmap' ? '🔥' : '🕸️'}{' '}
-              {metric === 'precision' ? 'Precision@3' : metric === 'recall' ? 'Recall@3' : metric === 'ndcg' ? 'NDCG@3' : 'Quality'}
+              {metric === 'precision' ? 'Precision@3 Benchmark' : metric === 'recall' ? 'Recall@3 Benchmark' : metric === 'ndcg' ? 'NDCG@3 Benchmark' : 'Quality Metric'}
             </span>
             <span className="badge info">{filtered.length} rows</span>
           </div>
@@ -721,20 +720,21 @@ export default function ExperimentExplorer() {
                   {filtered.map((row, i) => (
                     <tr key={i}>
                       <td><span className="badge info">{row.scenario}</span></td>
-                      <td style={{ fontFamily: "'Courier New', monospace", fontSize: '0.8125rem' }}>
+                      <td style={{ fontFamily: 'var(--font-mono)', fontSize: '0.75rem' }}>
                         <span style={{ color: METHOD_COLORS[row.method] || '#94a3b8' }}>●</span> {row.method}
                       </td>
-                      <td style={{ fontWeight: 600 }}>{row.precision?.toFixed(4)}</td>
-                      <td style={{ fontWeight: 600 }}>{row.recall?.toFixed(4)}</td>
+                      <td style={{ fontWeight: 600, fontFamily: 'var(--font-mono)' }}>{row.precision?.toFixed(4)}</td>
+                      <td style={{ fontWeight: 600, fontFamily: 'var(--font-mono)' }}>{row.recall?.toFixed(4)}</td>
                       <td style={{
                         fontWeight: 600,
+                        fontFamily: 'var(--font-mono)',
                         color: (row.ndcg || 0) > 0.6 ? '#10b981' : (row.ndcg || 0) > 0.45 ? '#f59e0b' : '#ef4444',
                       }}>
                         {row.ndcg?.toFixed(4)}
                       </td>
-                      {hasQuality && <td style={{ fontWeight: 600 }}>{row.quality?.toFixed(4) ?? '—'}</td>}
-                      {hasCoverage && <td>{row.coverage?.toFixed(4) ?? '—'}</td>}
-                      {hasLostAvail && <td>{row.lost_availability?.toFixed(2) ?? '—'}</td>}
+                      {hasQuality && <td style={{ fontWeight: 600, fontFamily: 'var(--font-mono)' }}>{row.quality?.toFixed(4) ?? '—'}</td>}
+                      {hasCoverage && <td style={{ fontFamily: 'var(--font-mono)' }}>{row.coverage?.toFixed(4) ?? '—'}</td>}
+                      {hasLostAvail && <td style={{ fontFamily: 'var(--font-mono)' }}>{row.lost_availability?.toFixed(2) ?? '—'}</td>}
                     </tr>
                   ))}
                 </tbody>
@@ -751,9 +751,9 @@ export default function ExperimentExplorer() {
       </div>
 
       {/* Cross-experiment comparison */}
-      <div className="card" style={{ marginTop: '24px' }}>
+      <div className="card" style={{ marginTop: '18px' }}>
         <div className="card-header">
-          <span className="card-title">🔬 Cross-Experiment Summary</span>
+          <span className="card-title">Cross-Experiment Meta-Benchmark Summary</span>
         </div>
         <div className="card-body">
           <table className="data-table">

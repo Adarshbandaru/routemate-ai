@@ -1,24 +1,24 @@
 import { useState } from 'react';
 
-const CHECK_LABELS = {
-  route_direction_compatible: 'Direction',
-  pickup_distance_eligible: 'Pickup ≤2km',
-  destination_distance_eligible: 'Dest ≤3km',
-  departure_time_eligible: 'Time ≤30min',
-  detour_eligible: 'Detour ≤5km',
-  identity_verification: 'Identity',
-  vehicle_verification: 'Vehicle',
-  capacity_eligible: 'Capacity',
-};
+const CHECK_KEYS = [
+  { key: 'route_direction_compatible', label: 'Direction' },
+  { key: 'pickup_distance_eligible', label: 'Pickup ≤2km' },
+  { key: 'destination_distance_eligible', label: 'Dest ≤3km' },
+  { key: 'departure_time_eligible', label: 'Time ≤30m' },
+  { key: 'detour_eligible', label: 'Detour ≤5km' },
+  { key: 'identity_verification', label: 'ID Verify' },
+  { key: 'vehicle_verification', label: 'Vehicle' },
+  { key: 'capacity_eligible', label: 'Capacity' },
+];
 
 const FEATURE_LABELS = {
   pickup_distance_km: 'Pickup Distance',
   destination_distance_km: 'Dest Distance',
   route_similarity: 'Route Similarity',
   direction_similarity: 'Direction Sim.',
-  detour_km: 'Detour',
+  detour_km: 'Detour Burden',
   departure_difference_min: 'Departure Δ',
-  driver_route_km: 'Driver Route',
+  driver_route_km: 'Driver Total Route',
 };
 
 const FEATURE_UNITS = {
@@ -44,86 +44,105 @@ export default function FeasibilityMatrix({ results, selectedDriver, onSelectDri
   return (
     <div className="card" id="feasibility-matrix">
       <div className="card-header">
-        <span className="card-title">
-          🔍 Feasibility Matrix
-        </span>
+        <div>
+          <span className="card-title">Feasibility Gate Evaluation Matrix</span>
+          <span style={{ fontSize: '0.725rem', color: 'var(--text-muted)' }}>
+            8 hard admissibility constraints evaluated per driver candidate
+          </span>
+        </div>
         <div className="experiment-selector">
-          {['all', 'eligible', 'rejected'].map((f) => (
+          {[
+            { id: 'all', label: `All (${results.all.length})` },
+            { id: 'eligible', label: `Eligible (${results.eligible.length})` },
+            { id: 'rejected', label: `Rejected (${results.rejected.length})` },
+          ].map((item) => (
             <button
-              key={f}
-              className={`experiment-chip ${filter === f ? 'active' : ''}`}
-              onClick={() => setFilter(f)}
+              key={item.id}
+              className={`experiment-chip ${filter === item.id ? 'active' : ''}`}
+              onClick={() => setFilter(item.id)}
             >
-              {f === 'all' ? `All (${results.all.length})` :
-               f === 'eligible' ? `✅ Eligible (${results.eligible.length})` :
-               `❌ Rejected (${results.rejected.length})`}
+              {item.label}
             </button>
           ))}
         </div>
       </div>
-      <div className="card-body" style={{ maxHeight: '600px', overflowY: 'auto' }}>
-        <div className="feasibility-grid">
-          {filtered.map((row) => {
-            const isSelected = selectedDriver === row.driver_id;
-            const isExpanded = expanded === row.driver_id;
-            return (
-              <div
-                key={row.driver_id}
-                className={`feasibility-row ${row.final_eligible ? 'eligible' : 'rejected'}`}
-                style={isSelected ? { borderColor: '#06b6d4', boxShadow: '0 0 12px rgba(6,182,212,0.3)' } : {}}
-                onClick={() => {
-                  onSelectDriver?.(row.driver_id);
-                  setExpanded(isExpanded ? null : row.driver_id);
-                }}
-              >
-                <div className="feasibility-header">
-                  <span className="feasibility-id">{row.driver_id}</span>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+      <div className="card-body" style={{ padding: 0, maxHeight: '520px', overflowY: 'auto' }}>
+        <table className="data-table">
+          <thead>
+            <tr>
+              <th style={{ width: '130px' }}>Driver</th>
+              <th style={{ width: '90px' }}>Status</th>
+              <th style={{ width: '70px' }}>Score</th>
+              {CHECK_KEYS.map((c) => (
+                <th key={c.key} style={{ textAlign: 'center', fontSize: '0.65rem' }}>{c.label}</th>
+              ))}
+              <th>Rejection Bottlenecks</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filtered.map((row) => {
+              const isSelected = selectedDriver === row.driver_id;
+              const isExpanded = expanded === row.driver_id;
+              return (
+                <tr
+                  key={row.driver_id}
+                  style={{
+                    cursor: 'pointer',
+                    background: isSelected ? 'var(--bg-active)' : undefined,
+                  }}
+                  onClick={() => {
+                    onSelectDriver?.(row.driver_id);
+                    setExpanded(isExpanded ? null : row.driver_id);
+                  }}
+                >
+                  <td style={{ fontFamily: 'var(--font-mono)', fontWeight: 600 }}>
+                    {row.driver_id}
+                  </td>
+                  <td>
                     <span className={`badge ${row.final_eligible ? 'success' : 'danger'}`}>
-                      {row.final_eligible ? '✅ ELIGIBLE' : '❌ REJECTED'}
+                      {row.final_eligible ? 'ELIGIBLE' : 'REJECTED'}
                     </span>
-                    <span style={{ 
-                      fontWeight: 700, 
-                      fontSize: '0.875rem',
-                      color: row.score >= 70 ? '#10b981' : row.score >= 50 ? '#f59e0b' : '#ef4444' 
-                    }}>
-                      {row.score.toFixed(1)}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="checks-grid">
-                  {Object.entries(CHECK_LABELS).map(([key, label]) => (
-                    <span key={key} className={`check-badge ${row[key] ? 'pass' : 'fail'}`}>
-                      {row[key] ? '✓' : '✗'} {label}
-                    </span>
-                  ))}
-                </div>
-
-                {row.rejection_reasons.length > 0 && (
-                  <div className="rejection-reasons">
-                    <ul>
-                      {row.rejection_reasons.map((r, i) => <li key={i}>{r}</li>)}
-                    </ul>
-                  </div>
-                )}
-
-                {isExpanded && (
-                  <div className="feature-detail" style={{ marginTop: '12px' }}>
-                    {Object.entries(FEATURE_LABELS).map(([key, label]) => (
-                      <div key={key} className="feature-item">
-                        <span className="feature-name">{label}</span>
-                        <span className="feature-value">
-                          {row.features[key]?.toFixed(3)}{FEATURE_UNITS[key] ? ` ${FEATURE_UNITS[key]}` : ''}
+                  </td>
+                  <td style={{
+                    fontFamily: 'var(--font-mono)',
+                    fontWeight: 700,
+                    color: row.score >= 70 ? '#34d399' : row.score >= 50 ? '#fbbf24' : '#f87171',
+                  }}>
+                    {row.score.toFixed(1)}
+                  </td>
+                  {CHECK_KEYS.map((c) => {
+                    const pass = row[c.key];
+                    return (
+                      <td key={c.key} style={{ textAlign: 'center' }}>
+                        <span style={{
+                          display: 'inline-block',
+                          width: '14px',
+                          height: '14px',
+                          borderRadius: '50%',
+                          background: pass ? 'rgba(16, 185, 129, 0.15)' : 'rgba(239, 68, 68, 0.15)',
+                          color: pass ? '#10b981' : '#ef4444',
+                          lineHeight: '14px',
+                          fontSize: '10px',
+                          fontWeight: 700,
+                          textAlign: 'center',
+                        }}>
+                          {pass ? '✓' : '✕'}
                         </span>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
+                      </td>
+                    );
+                  })}
+                  <td style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                    {row.rejection_reasons.length > 0 ? (
+                      <span style={{ color: '#f87171' }}>{row.rejection_reasons.join('; ')}</span>
+                    ) : (
+                      <span style={{ color: 'var(--text-muted)' }}>—</span>
+                    )}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
       </div>
     </div>
   );

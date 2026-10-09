@@ -8,7 +8,7 @@ import {
 } from '../data';
 
 const PALETTE = [
-  '#6366f1', '#06b6d4', '#10b981', '#f59e0b', '#ec4899',
+  '#3b82f6', '#0ea5e9', '#10b981', '#f59e0b', '#ec4899',
   '#8b5cf6', '#14b8a6', '#f97316', '#ef4444', '#84cc16',
   '#a855f7', '#22d3ee', '#34d399', '#fbbf24', '#fb7185',
 ];
@@ -93,8 +93,13 @@ export default function BatchAssignment() {
         dashArray: '6 4',
       }).addTo(map);
       const marker = L.circleMarker(coordToLL(rider.start), {
-        radius: 6, fillColor: color, color: '#fff', weight: 1.5, fillOpacity: isInSelected ? 1 : 0.7,
-      }).bindPopup(`<b>${rider.journey_id}</b><br/>Rider`).addTo(map);
+        radius: 5, fillColor: color, color: '#fff', weight: 1.5, fillOpacity: isInSelected ? 1 : 0.7,
+      }).bindPopup(`
+        <div style="font-family: var(--font-family); padding: 4px 2px;">
+          <div style="font-size: 10px; font-weight: 600; text-transform: uppercase; color: var(--text-muted);">Rider Request</div>
+          <div style="font-family: var(--font-mono); font-size: 12px; font-weight: 600; color: #38bdf8;">${rider.journey_id}</div>
+        </div>
+      `).addTo(map);
       layersRef.current.push(line, marker);
     });
 
@@ -111,13 +116,16 @@ export default function BatchAssignment() {
         opacity: selectedGroup !== null ? (isInSelected ? 0.95 : 0.1) : (isUnmatched ? 0.2 : 0.7),
       }).addTo(map);
       const marker = L.circleMarker(coordToLL(driver.start), {
-        radius: isInSelected ? 9 : 7,
+        radius: isInSelected ? 8 : 6,
         fillColor: isUnmatched ? '#475569' : color,
         color: '#fff', weight: 2, fillOpacity: isInSelected ? 1 : 0.8,
-      }).bindPopup(
-        `<b>${driver.journey_id}</b><br/>` +
-        `Cap: ${driver.capacity} | ${isUnmatched ? 'Unmatched' : `Group ${groupIdx + 1}`}`
-      ).addTo(map);
+      }).bindPopup(`
+        <div style="font-family: var(--font-family); padding: 4px 2px;">
+          <div style="font-size: 10px; font-weight: 600; text-transform: uppercase; color: var(--text-muted);">${isUnmatched ? 'Idle Fleet' : `Pool 0${groupIdx + 1}`}</div>
+          <div style="font-family: var(--font-mono); font-size: 12px; font-weight: 600; color: #f8fafc;">${driver.journey_id}</div>
+          <div style="font-size: 11px; color: var(--text-secondary); margin-top: 4px;">Capacity: ${driver.capacity} seats</div>
+        </div>
+      `).addTo(map);
       layersRef.current.push(line, marker);
     });
 
@@ -142,36 +150,36 @@ export default function BatchAssignment() {
   return (
     <div className="animate-in" id="batch-assignment-view">
       <div className="section-header">
-        <h2 className="section-title">🚐 Batch Assignment Simulator</h2>
+        <h2 className="section-title">Batch Assignment Simulator</h2>
         <p className="section-desc">
-          Simulate multi-rider batch matching with Greedy, Auction-Swap, and Exact Branch-and-Bound solvers. Evaluate vehicle utilization and optimality gap.
+          Simulate multi-rider batch assignment with Greedy, Auction-Swap, and Exact Branch-and-Bound solvers. Evaluate vehicle utilization and optimality gap.
         </p>
       </div>
 
       {/* Controls */}
-      <div style={{ display: 'flex', gap: '12px', marginBottom: '24px', flexWrap: 'wrap', alignItems: 'flex-end' }}>
+      <div style={{ display: 'flex', gap: '10px', marginBottom: '18px', flexWrap: 'wrap', alignItems: 'flex-end' }}>
         <div className="form-group">
           <label className="form-label">Seed</label>
           <input id="batch-seed" type="number" className="form-input" value={seed}
             onChange={(e) => { setSeed(parseInt(e.target.value, 10) || 0); setSelectedGroup(null); }}
-            style={{ width: '90px' }} />
+            style={{ width: '80px' }} />
         </div>
         <div className="form-group">
-          <label className="form-label">Riders</label>
+          <label className="form-label">Rider Demands</label>
           <select className="form-select" value={riderCount}
             onChange={(e) => { setRiderCount(parseInt(e.target.value, 10)); setSelectedGroup(null); }}>
-            {[3, 4, 6, 8, 10, 12].map((n) => <option key={n} value={n}>{n}</option>)}
+            {[3, 4, 6, 8, 10, 12].map((n) => <option key={n} value={n}>{n} Riders</option>)}
           </select>
         </div>
         <div className="form-group">
-          <label className="form-label">Drivers</label>
+          <label className="form-label">Driver Fleet</label>
           <select className="form-select" value={driverCount}
             onChange={(e) => { setDriverCount(parseInt(e.target.value, 10)); setSelectedGroup(null); }}>
-            {[5, 8, 10, 15, 20].map((n) => <option key={n} value={n}>{n}</option>)}
+            {[5, 8, 10, 15, 20].map((n) => <option key={n} value={n}>{n} Vehicles</option>)}
           </select>
         </div>
         <div className="form-group">
-          <label className="form-label">Method</label>
+          <label className="form-label">Solver Algorithm</label>
           <select className="form-select" value={method}
             onChange={(e) => { setMethod(e.target.value); setSelectedGroup(null); }}>
             <option value="greedy">Greedy Heuristic</option>
@@ -180,22 +188,22 @@ export default function BatchAssignment() {
           </select>
         </div>
         <button className="btn btn-primary" onClick={() => { setSeed(Math.floor(Math.random() * 9999)); setSelectedGroup(null); }}>
-          🎲 Random
+          Random Seed
         </button>
-        <button className={`btn ${compareMode ? 'btn-primary' : 'btn-ghost'}`}
+        <button className={`btn ${compareMode ? 'btn-primary' : 'btn-outline'}`}
           onClick={() => setCompareMode(!compareMode)}>
-          ⚔️ Compare
+          Compare Solvers
         </button>
-        <button className="btn btn-ghost" onClick={handleExport}>
-          📥 Export
+        <button className="btn btn-outline" onClick={handleExport}>
+          Export CSV
         </button>
       </div>
 
       {/* Stats row */}
-      <div className="stats-grid animate-in" style={{ marginBottom: '24px' }}>
-        <div className="stat-card purple">
+      <div className="stats-grid animate-in" style={{ marginBottom: '18px' }}>
+        <div className="stat-card indigo">
           <div className="stat-label">Feasibility Graph</div>
-          <div className="stat-value purple">{result.feasibleEdges}</div>
+          <div className="stat-value indigo">{result.feasibleEdges}</div>
           <div className="stat-detail">{result.totalPairs} pairs evaluated</div>
         </div>
         <div className="stat-card green">
@@ -206,32 +214,37 @@ export default function BatchAssignment() {
         <div className="stat-card cyan">
           <div className="stat-label">Active Vehicles</div>
           <div className="stat-value cyan">{result.matchedDrivers}</div>
-          <div className="stat-detail">{result.unmatchedDrivers.length} idle</div>
+          <div className="stat-detail">{result.unmatchedDrivers.length} idle fleet</div>
         </div>
         <div className="stat-card amber">
-          <div className="stat-label">Objective</div>
+          <div className="stat-label">Objective Value</div>
           <div className="stat-value amber">{result.objectiveValue.toFixed(1)}</div>
           <div className="stat-detail">
             {method === 'optimal' ? 'provably optimal (0% gap)' : `gap vs optimal: ${optimalityGap}%`}
           </div>
         </div>
-        <div className="stat-card pink">
-          <div className="stat-label">Solve Time</div>
-          <div className="stat-value pink">{result.totalMs}ms</div>
+        <div className="stat-card rose">
+          <div className="stat-label">Solve Latency</div>
+          <div className="stat-value rose">{result.totalMs}ms</div>
           <div className="stat-detail">graph: {result.graphMs}ms + solve: {result.solveMs}ms</div>
         </div>
       </div>
 
       {/* Compare panel */}
       {compareMode && (
-        <div className="card animate-in" style={{ marginBottom: '24px' }}>
+        <div className="card animate-in" style={{ marginBottom: '18px' }}>
           <div className="card-header">
-            <span className="card-title">⚔️ Algorithm Benchmark: Greedy vs Auction vs Optimal</span>
+            <div>
+              <span className="card-title">Solver Benchmark: Greedy vs Auction vs Branch & Bound</span>
+              <span style={{ fontSize: '0.725rem', color: 'var(--text-muted)' }}>
+                Comparing combinatorial objective scores, heuristic gap, and latency
+              </span>
+            </div>
             <span className="badge success">
               Optimal: {optimalResult.objectiveValue.toFixed(1)} obj
             </span>
           </div>
-          <div className="card-body">
+          <div className="card-body" style={{ padding: 0 }}>
             <table className="data-table">
               <thead>
                 <tr>
@@ -246,26 +259,25 @@ export default function BatchAssignment() {
                 {[
                   { label: 'Matched Riders', g: greedyResult.matchedRiders, a: auctionResult.matchedRiders, o: optimalResult.matchedRiders },
                   { label: 'Active Vehicles', g: greedyResult.matchedDrivers, a: auctionResult.matchedDrivers, o: optimalResult.matchedDrivers },
-                  { label: 'Objective', g: greedyResult.objectiveValue.toFixed(1), a: auctionResult.objectiveValue.toFixed(1), o: optimalResult.objectiveValue.toFixed(1) },
+                  { label: 'Objective Score', g: greedyResult.objectiveValue.toFixed(1), a: auctionResult.objectiveValue.toFixed(1), o: optimalResult.objectiveValue.toFixed(1) },
                   { label: 'Optimality Gap', g: ((optimalResult.objectiveValue - greedyResult.objectiveValue) / (optimalResult.objectiveValue || 1) * 100).toFixed(1) + '%', a: ((optimalResult.objectiveValue - auctionResult.objectiveValue) / (optimalResult.objectiveValue || 1) * 100).toFixed(1) + '%', o: '0.0%' },
-                  { label: 'Feasible Edges', g: greedyResult.feasibleEdges, a: auctionResult.feasibleEdges, o: optimalResult.feasibleEdges },
-                  { label: 'Solve Time', g: greedyResult.solveMs + 'ms', a: auctionResult.solveMs + 'ms', o: optimalResult.solveMs + 'ms' },
-                ].map((row) => {
-                  return (
-                    <tr key={row.label}>
-                      <td style={{ fontWeight: 500 }}>{row.label}</td>
-                      <td style={{ fontFamily: "'Courier New', monospace" }}>{row.g}</td>
-                      <td style={{ fontFamily: "'Courier New', monospace" }}>{row.a}</td>
-                      <td style={{ fontFamily: "'Courier New', monospace", fontWeight: 600, color: '#10b981' }}>{row.o}</td>
-                      <td style={{
-                        fontWeight: 600,
-                        color: row.label === 'Optimality Gap' ? '#f59e0b' : '#64748b',
-                      }}>
-                        {row.label === 'Optimality Gap' ? `Auction: ${row.a}` : '—'}
-                      </td>
-                    </tr>
-                  );
-                })}
+                  { label: 'Feasible Graph Edges', g: greedyResult.feasibleEdges, a: auctionResult.feasibleEdges, o: optimalResult.feasibleEdges },
+                  { label: 'Solve Latency', g: greedyResult.solveMs + 'ms', a: auctionResult.solveMs + 'ms', o: optimalResult.solveMs + 'ms' },
+                ].map((row) => (
+                  <tr key={row.label}>
+                    <td style={{ fontWeight: 500 }}>{row.label}</td>
+                    <td style={{ fontFamily: 'var(--font-mono)' }}>{row.g}</td>
+                    <td style={{ fontFamily: 'var(--font-mono)' }}>{row.a}</td>
+                    <td style={{ fontFamily: 'var(--font-mono)', fontWeight: 600, color: '#34d399' }}>{row.o}</td>
+                    <td style={{
+                      fontWeight: 600,
+                      fontFamily: 'var(--font-mono)',
+                      color: row.label === 'Optimality Gap' ? '#fbbf24' : 'var(--text-muted)',
+                    }}>
+                      {row.label === 'Optimality Gap' ? `Auction: ${row.a}` : '—'}
+                    </td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>
@@ -275,18 +287,21 @@ export default function BatchAssignment() {
       <div className="grid-sidebar">
         {/* Assignment groups sidebar */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-          <div className="card" style={{ maxHeight: '560px', overflowY: 'auto' }}>
+          <div className="card" style={{ maxHeight: '520px', overflowY: 'auto' }}>
             <div className="card-header">
-              <span className="card-title">📋 Assignment Groups</span>
-              <span className="badge info">{result.groups.length} groups</span>
+              <span className="card-title">Formed Pools</span>
+              <span className="badge info">{result.groups.length} Pools</span>
             </div>
-            <div className="card-body" style={{ padding: '12px' }}>
+            <div className="card-body" style={{ padding: '10px' }}>
               {result.groups.length === 0 && (
-                <div className="empty-state" style={{ padding: '24px 12px' }}>
-                  <div className="empty-state-icon">🚐</div>
+                <div className="empty-state">
+                  <svg className="empty-state-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line>
+                  </svg>
                   <div className="empty-state-text">No Feasible Pools Formed</div>
                   <div className="empty-state-hint">
-                    No rider candidates met the detour and capacity constraints for this cohort. Try adjusting the seed or increasing the driver fleet size.
+                    No candidates met detour bounds. Try adjusting seed or increasing fleet size.
                   </div>
                 </div>
               )}
@@ -298,25 +313,25 @@ export default function BatchAssignment() {
                     key={group.driver_id}
                     className="assignment-group-card"
                     style={{
-                      borderLeft: `4px solid ${color}`,
-                      ...(isSelected ? { background: `${color}15`, borderColor: color, boxShadow: `0 0 12px ${color}40` } : {}),
+                      borderLeft: `3px solid ${color}`,
+                      ...(isSelected ? { background: `${color}15`, borderColor: color } : {}),
                     }}
                     onClick={() => setSelectedGroup(isSelected ? null : idx)}
                   >
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                      <span style={{ fontWeight: 600, fontSize: '0.8125rem' }}>{group.driver_id}</span>
-                      <span style={{ fontWeight: 700, color, fontSize: '0.875rem' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                      <span style={{ fontWeight: 600, fontSize: '0.8125rem', fontFamily: 'var(--font-mono)' }}>{group.driver_id}</span>
+                      <span style={{ fontWeight: 700, color, fontSize: '0.8125rem', fontFamily: 'var(--font-mono)' }}>
                         {group.groupScore.toFixed(1)}
                       </span>
                     </div>
-                    <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', marginBottom: '6px' }}>
+                    <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', marginBottom: '4px' }}>
                       {group.rider_ids.map((rid) => (
-                        <span key={rid} className="badge info" style={{ fontSize: '10px', padding: '1px 6px' }}>
+                        <span key={rid} className="badge info" style={{ fontSize: '9px', padding: '1px 5px' }}>
                           {rid}
                         </span>
                       ))}
                     </div>
-                    <div style={{ fontSize: '0.6875rem', color: '#64748b' }}>
+                    <div style={{ fontSize: '0.6875rem', color: 'var(--text-muted)' }}>
                       {group.seatsUsed} seats used · {group.remainingCapacity} remaining
                     </div>
                   </div>
@@ -324,13 +339,13 @@ export default function BatchAssignment() {
               })}
 
               {result.unmatchedRiders.length > 0 && (
-                <div style={{ marginTop: '12px', padding: '10px', background: 'rgba(239,68,68,0.06)', borderRadius: '8px', border: '1px solid rgba(239,68,68,0.15)' }}>
-                  <div style={{ fontSize: '0.6875rem', color: '#ef4444', fontWeight: 600, marginBottom: '4px' }}>
-                    UNMATCHED RIDERS ({result.unmatchedRiders.length})
+                <div style={{ marginTop: '10px', padding: '8px 10px', background: 'var(--accent-danger-subtle)', borderRadius: 'var(--radius-xs)', border: '1px solid rgba(239,68,68,0.2)' }}>
+                  <div style={{ fontSize: '0.6875rem', color: '#f87171', fontWeight: 600, marginBottom: '4px', textTransform: 'uppercase' }}>
+                    Unmatched Riders ({result.unmatchedRiders.length})
                   </div>
                   <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
                     {result.unmatchedRiders.map((rid) => (
-                      <span key={rid} className="badge danger" style={{ fontSize: '10px', padding: '1px 6px' }}>{rid}</span>
+                      <span key={rid} className="badge danger" style={{ fontSize: '9px', padding: '1px 5px' }}>{rid}</span>
                     ))}
                   </div>
                 </div>
@@ -344,12 +359,17 @@ export default function BatchAssignment() {
       </div>
 
       {/* Edge details table */}
-      <div className="card" style={{ marginTop: '24px' }}>
+      <div className="card" style={{ marginTop: '18px' }}>
         <div className="card-header">
-          <span className="card-title">🔗 Feasibility Graph Edges</span>
+          <div>
+            <span className="card-title">Feasibility Bipartite Graph Edges</span>
+            <span style={{ fontSize: '0.725rem', color: 'var(--text-muted)' }}>
+              Evaluated compatible rider–driver pairings meeting detour bounds
+            </span>
+          </div>
           <span className="badge info">{result.edges.length} feasible</span>
         </div>
-        <div className="card-body" style={{ maxHeight: '300px', overflowY: 'auto' }}>
+        <div className="card-body" style={{ padding: 0, maxHeight: '280px', overflowY: 'auto' }}>
           <table className="data-table">
             <thead>
               <tr>
@@ -359,25 +379,25 @@ export default function BatchAssignment() {
                 <th>Pickup</th>
                 <th>Dest</th>
                 <th>Detour</th>
-                <th>Assigned</th>
+                <th>Assignment</th>
               </tr>
             </thead>
             <tbody>
               {result.edges.slice(0, 50).map((e, i) => {
                 const assigned = result.groups.some((g) => g.driver_id === e.driver_id && g.rider_ids.includes(e.rider_id));
                 return (
-                  <tr key={i} style={assigned ? { background: 'rgba(16,185,129,0.06)' } : {}}>
-                    <td style={{ fontFamily: "'Courier New', monospace", fontSize: '0.75rem' }}>{e.driver_id}</td>
-                    <td style={{ fontFamily: "'Courier New', monospace", fontSize: '0.75rem' }}>{e.rider_id}</td>
-                    <td style={{ fontWeight: 600, color: e.score >= 70 ? '#10b981' : e.score >= 50 ? '#f59e0b' : '#ef4444' }}>
+                  <tr key={i} style={assigned ? { background: 'var(--accent-success-subtle)' } : {}}>
+                    <td style={{ fontFamily: 'var(--font-mono)' }}>{e.driver_id}</td>
+                    <td style={{ fontFamily: 'var(--font-mono)' }}>{e.rider_id}</td>
+                    <td style={{ fontFamily: 'var(--font-mono)', fontWeight: 600, color: e.score >= 70 ? '#34d399' : e.score >= 50 ? '#fbbf24' : '#f87171' }}>
                       {e.score.toFixed(1)}
                     </td>
                     <td>{e.features.pickup_distance_km.toFixed(2)} km</td>
                     <td>{e.features.destination_distance_km.toFixed(2)} km</td>
                     <td>{e.features.detour_km.toFixed(2)} km</td>
                     <td>
-                      <span className={`badge ${assigned ? 'success' : 'warning'}`} style={{ fontSize: '10px' }}>
-                        {assigned ? '✓ Yes' : '— No'}
+                      <span className={`badge ${assigned ? 'success' : 'neutral'}`} style={{ fontSize: '9px' }}>
+                        {assigned ? 'ASSIGNED' : 'UNASSIGNED'}
                       </span>
                     </td>
                   </tr>

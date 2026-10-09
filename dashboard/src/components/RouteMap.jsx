@@ -3,7 +3,7 @@ import L from 'leaflet';
 import { coordToLL } from '../data';
 
 const COLORS = {
-  rider: '#6366f1',
+  rider: '#3b82f6',
   eligible: '#10b981',
   rejected: '#ef4444',
   selected: '#06b6d4',
@@ -11,21 +11,83 @@ const COLORS = {
   neutral: '#64748b',
 };
 
-function createPinIcon(emoji, bg, borderColor = '#ffffff') {
+// SVG pin creators for clean mobility-tech map styling
+function createPickupIcon() {
   return L.divIcon({
-    className: 'custom-map-pin',
-    html: `<div style="
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 28px;
-      height: 28px;
-      background: ${bg};
-      border: 2px solid ${borderColor};
-      border-radius: 50%;
-      box-shadow: 0 0 10px rgba(0,0,0,0.5);
-      font-size: 13px;
-    ">${emoji}</div>`,
+    className: 'custom-map-pin pickup-pin',
+    html: `
+      <div style="
+        position: relative;
+        width: 26px;
+        height: 26px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #0f172a;
+        border: 2px solid #3b82f6;
+        border-radius: 50%;
+        box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+      ">
+        <div style="width: 8px; height: 8px; background: #3b82f6; border-radius: 50%;"></div>
+      </div>
+    `,
+    iconSize: [26, 26],
+    iconAnchor: [13, 13],
+    popupAnchor: [0, -14],
+  });
+}
+
+function createDestinationIcon() {
+  return L.divIcon({
+    className: 'custom-map-pin dest-pin',
+    html: `
+      <div style="
+        position: relative;
+        width: 26px;
+        height: 26px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #0f172a;
+        border: 2px solid #10b981;
+        border-radius: 50%;
+        box-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
+      ">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path>
+          <line x1="4" y1="22" x2="4" y2="15"></line>
+        </svg>
+      </div>
+    `,
+    iconSize: [26, 26],
+    iconAnchor: [13, 13],
+    popupAnchor: [0, -14],
+  });
+}
+
+function createIncidentIcon() {
+  return L.divIcon({
+    className: 'custom-map-pin incident-pin',
+    html: `
+      <div style="
+        position: relative;
+        width: 28px;
+        height: 28px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #1e1b18;
+        border: 2px solid #f59e0b;
+        border-radius: 6px;
+        box-shadow: 0 0 12px rgba(245, 158, 11, 0.6);
+      ">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path>
+          <line x1="12" y1="9" x2="12" y2="13"></line>
+          <line x1="12" y1="17" x2="12.01" y2="17"></line>
+        </svg>
+      </div>
+    `,
     iconSize: [28, 28],
     iconAnchor: [14, 14],
     popupAnchor: [0, -16],
@@ -63,12 +125,11 @@ export default function RouteMap({
 
     const map = mapInstanceRef.current;
 
-    // Invalidate size to ensure clean tile render
     setTimeout(() => {
       try {
         map.invalidateSize();
       } catch {
-        // map might be unmounted
+        // map unmounted
       }
     }, 150);
 
@@ -85,30 +146,45 @@ export default function RouteMap({
         color: COLORS.rider,
         weight: 5,
         opacity: 0.95,
-        dashArray: null,
       }).addTo(map);
       layersRef.current.push(riderLine);
 
       // Rider markers
       const riderStart = L.marker(coordToLL(rider.start), {
-        icon: createPinIcon('🟢', '#1e1b4b', '#818cf8'),
-      }).bindPopup(`<b>Rider Pickup</b><br/>ID: <code>${rider.journey_id}</code>`).addTo(map);
+        icon: createPickupIcon(),
+      }).bindPopup(`
+        <div style="font-family: var(--font-family); padding: 4px 2px;">
+          <div style="font-size: 10px; font-weight: 600; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.5px;">Rider Pickup</div>
+          <div style="font-family: var(--font-mono); font-size: 12px; font-weight: 600; color: #3b82f6; margin-top: 2px;">${rider.journey_id}</div>
+          <div style="font-size: 11px; color: var(--text-secondary); margin-top: 4px;">Seats requested: ${rider.seats_requested || 1}</div>
+        </div>
+      `).addTo(map);
 
       const riderEnd = L.marker(coordToLL(rider.destination), {
-        icon: createPinIcon('🏁', '#1e1b4b', '#818cf8'),
-      }).bindPopup(`<b>Rider Destination</b><br/>Seats: ${rider.seats_requested || 1}`).addTo(map);
+        icon: createDestinationIcon(),
+      }).bindPopup(`
+        <div style="font-family: var(--font-family); padding: 4px 2px;">
+          <div style="font-size: 10px; font-weight: 600; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.5px;">Rider Destination</div>
+          <div style="font-family: var(--font-mono); font-size: 12px; font-weight: 600; color: #10b981; margin-top: 2px;">Target Stop</div>
+          <div style="font-size: 11px; color: var(--text-secondary); margin-top: 4px;">Departure: ${rider.departure || '08:30'}</div>
+        </div>
+      `).addTo(map);
 
       layersRef.current.push(riderStart, riderEnd);
     }
 
-    // Draw incident if present (Dynamic Recourse demonstration)
+    // Draw incident if present
     if (incident && incident.coordinate) {
       const incLatLng = coordToLL(incident.coordinate);
       const incMarker = L.marker(incLatLng, {
-        icon: createPinIcon('⚠️', '#78350f', '#f59e0b'),
-      }).bindPopup(
-        `<b>Road Closure Incident</b><br/>${incident.label || 'Congestion spike / closure'}<br/>Recourse Detour active`
-      ).addTo(map);
+        icon: createIncidentIcon(),
+      }).bindPopup(`
+        <div style="font-family: var(--font-family); padding: 4px 2px;">
+          <div style="font-size: 10px; font-weight: 600; text-transform: uppercase; color: #f59e0b; letter-spacing: 0.5px;">Incident Active</div>
+          <div style="font-size: 12px; font-weight: 600; margin-top: 2px;">${incident.label || 'Road Closure'}</div>
+          <div style="font-size: 11px; color: var(--text-secondary); margin-top: 4px;">Dynamic A* replan triggered</div>
+        </div>
+      `).addTo(map);
       layersRef.current.push(incMarker);
 
       if (incident.detourRoute && incident.detourRoute.length > 0) {
@@ -118,7 +194,12 @@ export default function RouteMap({
           weight: 4,
           opacity: 0.9,
           dashArray: '8 6',
-        }).bindPopup('<b>Recourse Detour Path</b><br/>Dynamic A* replan avoiding closed edge').addTo(map);
+        }).bindPopup(`
+          <div style="font-family: var(--font-family); padding: 4px 2px;">
+            <div style="font-size: 10px; font-weight: 600; text-transform: uppercase; color: #f59e0b;">Recourse Detour Path</div>
+            <div style="font-size: 11px; color: var(--text-secondary); margin-top: 2px;">Avoiding blocked segment</div>
+          </div>
+        `).addTo(map);
         layersRef.current.push(detourLine);
       }
     }
@@ -135,9 +216,9 @@ export default function RouteMap({
         const isSelected = selectedDriver === driver.journey_id;
         const isEligible = result ? result.final_eligible : true;
 
-        let color = isSelected ? COLORS.selected : isEligible ? COLORS.eligible : COLORS.rejected;
-        let weight = isSelected ? 5 : isEligible ? 3 : 2;
-        let opacity = isSelected ? 1.0 : isEligible ? 0.7 : 0.25;
+        const color = isSelected ? COLORS.selected : isEligible ? COLORS.eligible : COLORS.rejected;
+        const weight = isSelected ? 5 : isEligible ? 3 : 2;
+        const opacity = isSelected ? 1.0 : isEligible ? 0.75 : 0.25;
 
         const driverLatLngs = (driver.route || []).map((c) => coordToLL(c));
         if (driverLatLngs.length === 0) return;
@@ -152,17 +233,25 @@ export default function RouteMap({
         driverLine.on('click', () => onSelectDriver?.(driver.journey_id));
 
         const startMarker = L.circleMarker(coordToLL(driver.start), {
-          radius: isSelected ? 8 : 5,
+          radius: isSelected ? 7 : 5,
           fillColor: color,
           color: isSelected ? '#ffffff' : color,
           weight: isSelected ? 2 : 1,
-          fillOpacity: isSelected ? 1 : 0.75,
-        }).bindPopup(
-          `<b>${driver.journey_id}</b><br/>` +
-          `Status: ${isEligible ? '✅ Eligible' : '❌ Rejected'}<br/>` +
-          `Score: ${result?.score !== undefined ? result.score.toFixed(1) : 'N/A'}<br/>` +
-          `Capacity: ${driver.capacity || 'N/A'}`
-        ).addTo(map);
+          fillOpacity: isSelected ? 1 : 0.8,
+        }).bindPopup(`
+          <div style="font-family: var(--font-family); padding: 4px 2px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+              <span style="font-family: var(--font-mono); font-size: 12px; font-weight: 600;">${driver.journey_id}</span>
+              <span class="badge ${isEligible ? 'success' : 'danger'}" style="font-size: 9px; padding: 1px 5px;">
+                ${isEligible ? 'ELIGIBLE' : 'REJECTED'}
+              </span>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 4px; margin-top: 6px; font-size: 11px; color: var(--text-secondary);">
+              <div>Score: <strong style="color: var(--text-primary);">${result?.score !== undefined ? result.score.toFixed(1) : '—'}</strong></div>
+              <div>Seats: <strong style="color: var(--text-primary);">${driver.capacity || '—'}</strong></div>
+            </div>
+          </div>
+        `).addTo(map);
 
         startMarker.on('click', () => onSelectDriver?.(driver.journey_id));
 
@@ -179,7 +268,7 @@ export default function RouteMap({
       try {
         map.fitBounds(L.latLngBounds(allPoints).pad(0.12));
       } catch {
-        // bounds fit failure fallback
+        // bounds fit fallback
       }
     }
 

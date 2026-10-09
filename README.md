@@ -72,14 +72,27 @@ RouteMate AI is a modular, transparent matching and fleet dispatch intelligence 
    - **In-Flight Active-Trip Insertions**: Dynamically schedules pickups into partially occupied active vehicles, slashing fleet VKT by **60.5%** (50.5 km vs 127.8 km) and median passenger wait time by **39.1%** (102.6s vs 169.0s).
    - **Online Incident Recourse**: When unexpected arterial road closures degrade static plans (40% feasibility failure), lightweight online recourse restores **100% trip feasibility** in **3.42 ms** with **76.7% objective recovery**.
 
-4. **Interactive Modern Web Dashboard**
-   - Built with **React 19 + Vite 6 + Leaflet 1.9 + Vanilla CSS**.
-   - **🚀 Guided Demo**: End-to-end interactive 6-step walkthrough linking request creation to verified research evidence.
-   - **🗺️ Match Playground**: Spatial corridor mapping, interactive driver inspection, and CSV export.
-   - **🚐 Batch Assignment**: Greedy vs. Auction vs. Exact B&B solver benchmark with vehicle seat utilization gauges.
-   - **📊 Experiment Explorer**: Filterable multi-scenario benchmark cards covering all 14 experiments.
-   - **🔌 Live API Console**: Real-time HTTP connection, latency monitoring, and client-side fallback simulation.
-   - **🏗️ Architecture & Theory**: Interactive system diagram and mathematical contract specifications.
+4. **Interactive Enterprise Mobility Console**
+   - Built with **React 19 + Vite 6 + Leaflet 1.9 + Vanilla CSS** with full Dark and Light mode support.
+   - **Guided Demo**: Focused 6-step engineering workflow connecting commuter request ingestion directly to verified experimental evidence.
+   - **Match Playground**: Geospatial route corridor centerpiece, live candidate inspection gauge, and 8-gate feasibility evaluation matrix.
+   - **Batch Assignment**: Side-by-side solver benchmarking (Greedy Heuristic vs. Auction-Swap vs. Exact Branch & Bound) with optimality gap calculations.
+   - **Fleet Staging**: Spatial transit demand radar and predictive idle fleet relocation directives.
+   - **Experiment Explorer**: Multi-scenario benchmark inspector covering all 14 empirical studies with bar charts, data tables, heatmaps, and radar profiles.
+   - **Live API Workbench**: Real-time HTTP FastAPI integration, cURL code generator, and client-side simulator mode.
+   - **Architecture Blueprint**: Interactive 6-stage pipeline specifications and mathematical constraint thresholds.
+
+### 🖥️ Dashboard Showcase
+
+| **Guided Demo (6-Stage Workflow)** | **Match Playground & Spatial Matrix** |
+|:---:|:---:|
+| ![Guided Demo](docs/assets/dashboard_guided_demo.png) | ![Match Playground](docs/assets/dashboard_match_playground.png) |
+| *Focused engineering workflow from intake to verified evidence* | *Geospatial route centerpiece with live candidate attribute inspection* |
+
+| **Combinatorial Batch Assignment** | **Predictive Fleet Staging & Demand Radar** |
+|:---:|:---:|
+| ![Batch Assignment](docs/assets/dashboard_batch_assignment.png) | ![Fleet Staging](docs/assets/dashboard_fleet_staging.png) |
+| *Greedy, Auction-Swap, and Exact Branch-and-Bound solver bench* | *Spatial supply-demand balancing and proactive relocation directives* |
 
 ---
 
@@ -88,33 +101,33 @@ RouteMate AI is a modular, transparent matching and fleet dispatch intelligence 
 Follow this step-by-step walkthrough to inspect RouteMate AI:
 
 1. **Step 1: Ingest Ride Request**
-   - In the dashboard, click **🚀 Guided Demo**.
+   - In the dashboard, click **Guided Demo**.
    - Select the preset `Financial District to SoMa Commute` (1 seat, peak morning rush hour).
    - Notice the passenger origin pin, destination pin, and direct corridor vector.
-   - Click **Next: Filter Compatible Drivers →**.
+   - Click **Proceed to Feasibility Filtering →**.
 
 2. **Step 2: Inspect 8-Gate Feasibility Matrix**
    - Observe how the 10 candidate drivers in the fleet are evaluated.
    - Drivers heading opposite direction or failing identity/vehicle verification are immediately rejected.
    - Click any rejected driver (e.g., `DRV-02` or `DRV-08`) to view explicit rejection reasons.
-   - Click **Next: Inspect Explainable Scores →**.
+   - Click **Proceed to Explainable Scoring →**.
 
 3. **Step 3: Analyze Explainable Score Breakdown**
    - View the top recommended matches ranked by the L2 logistic and route-time scoring function.
    - Inspect the feature attribution bars: positive points awarded for corridor overlap and verified status; penalty points applied for detour burden.
-   - Click **Next: Run Fleet Batch Assignment →**.
+   - Click **Proceed to Fleet Batch Assignment →**.
 
 4. **Step 4: Solve Fleet Multi-Rider Batch Pooling**
    - Scale from a single rider to a 6-rider by 10-driver fleet batch.
    - Review the solver comparison table: Greedy (<1ms) vs Auction-Swap vs Exact Branch-and-Bound.
    - Inspect formed vehicle pools: observe seat capacity utilization (100% on dual-rider pooled cars).
-   - Click **Next: Compare Dispatch Strategies →**.
+   - Click **Proceed to Dispatch Strategies →**.
 
 5. **Step 5: Compare Rolling Dispatch Policies**
    - Compare **Static Batching (60s)** vs **Periodic Rolling (30s)** vs **Event-Driven Rolling (Instant)**.
    - Toggle policies to observe the **60.5% fleet mileage reduction** (50.5 km vs 127.8 km) and **39.1% wait time reduction** (102.6s vs 169.0s).
    - Notice the 36 in-flight active-trip insertions executed with **0 passenger cancellations or reassignments**.
-   - Click **Next: View Verified Experiment Evidence →** to inspect the research citations.
+   - Click **Proceed to Scientific Evidence →** to inspect the research citations.
 
 ---
 

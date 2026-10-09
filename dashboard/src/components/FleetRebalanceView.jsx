@@ -6,9 +6,9 @@ import {
 } from '../data';
 
 const REGIMES = [
-  { id: 'morning_peak', label: '🌅 Morning Peak', desc: 'Surge at FiDi & SoMa offices' },
-  { id: 'evening_peak', label: '🌆 Evening Rush', desc: 'Surge at Caltrain & Transit Spines' },
-  { id: 'off_peak', label: '☀️ Off-Peak Balanced', desc: 'Evenly distributed commuter demand' },
+  { id: 'morning_peak', label: 'Morning Peak', desc: 'Surge at Financial District & SoMa employment cores' },
+  { id: 'evening_peak', label: 'Evening Rush', desc: 'Surge at Caltrain transit terminal & outbound spines' },
+  { id: 'off_peak', label: 'Off-Peak Balanced', desc: 'Evenly distributed metropolitan demand' },
 ];
 
 export default function FleetRebalanceView() {
@@ -72,15 +72,15 @@ export default function FleetRebalanceView() {
       const isDeficit = z.deficit > 0;
       const isSurplus = z.deficit < 0;
 
-      const ringColor = isDeficit ? '#ef4444' : isSurplus ? '#10b981' : '#06b6d4';
+      const ringColor = isDeficit ? '#ef4444' : isSurplus ? '#10b981' : '#0ea5e9';
 
       // Zone radius circle
       const zoneCircle = L.circle([z.coordinate.latitude, z.coordinate.longitude], {
         radius: z.radius_km * 450,
         color: ringColor,
         fillColor: ringColor,
-        fillOpacity: isSelected ? 0.35 : 0.18,
-        weight: isSelected ? 3 : 1.5,
+        fillOpacity: isSelected ? 0.3 : 0.15,
+        weight: isSelected ? 2.5 : 1.5,
       }).addTo(map);
 
       // Zone center marker
@@ -90,18 +90,27 @@ export default function FleetRebalanceView() {
         fillColor: ringColor,
         fillOpacity: 1,
         weight: 2,
-      }).bindPopup(
-        `<b>${z.name}</b><br/>` +
-        `Current Idle: <strong>${z.initialVehicles}</strong><br/>` +
-        `Demand Target: <strong>${z.targetVehicles}</strong><br/>` +
-        `Status: ${isDeficit ? `⚠️ Deficit (-${z.deficit})` : isSurplus ? `🟢 Surplus (+${Math.abs(z.deficit)})` : '✅ Balanced'}`
-      ).addTo(map);
+      }).bindPopup(`
+        <div style="font-family: var(--font-family); padding: 4px 2px;">
+          <div style="font-size: 10px; font-weight: 600; text-transform: uppercase; color: var(--text-muted);">${z.zone_id}</div>
+          <div style="font-size: 12px; font-weight: 700; color: #f8fafc; margin-top: 2px;">${z.name}</div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 4px; margin-top: 6px; font-size: 11px; color: var(--text-secondary);">
+            <div>Idle Supply: <strong>${z.initialVehicles}</strong></div>
+            <div>Target Need: <strong>${z.targetVehicles}</strong></div>
+          </div>
+          <div style="margin-top: 6px;">
+            <span class="badge ${isDeficit ? 'danger' : isSurplus ? 'success' : 'info'}" style="font-size: 9px;">
+              ${isDeficit ? `DEFICIT (-${z.deficit})` : isSurplus ? `SURPLUS (+${Math.abs(z.deficit)})` : 'BALANCED'}
+            </span>
+          </div>
+        </div>
+      `).addTo(map);
 
       zoneMarker.on('click', () => setSelectedZone(z.zone_id));
       layersRef.current.push(zoneCircle, zoneMarker);
     });
 
-    // 2. Draw repositioning directive trajectories (arrows)
+    // 2. Draw repositioning directive trajectories
     simResult.directives.forEach((d) => {
       const fromLL = [d.from_coord.latitude, d.from_coord.longitude];
       const toLL = [d.to_coord.latitude, d.to_coord.longitude];
@@ -111,11 +120,15 @@ export default function FleetRebalanceView() {
         weight: 3,
         opacity: 0.85,
         dashArray: '6 6',
-      }).bindPopup(
-        `<b>Relocation Directive</b><br/>Vehicle: <code>${d.driver_id}</code><br/>` +
-        `From: ${d.from_zone} → To: ${d.to_zone}<br/>` +
-        `Deadhead: ${d.distance_km} km (~${d.est_minutes} min)`
-      ).addTo(map);
+      }).bindPopup(`
+        <div style="font-family: var(--font-family); padding: 4px 2px;">
+          <div style="font-size: 10px; font-weight: 600; text-transform: uppercase; color: #f59e0b;">Relocation Directive</div>
+          <div style="font-family: var(--font-mono); font-size: 12px; font-weight: 600; margin-top: 2px;">${d.driver_id}</div>
+          <div style="font-size: 11px; color: var(--text-secondary); margin-top: 4px;">
+            ${d.from_zone} → ${d.to_zone} · ${d.distance_km} km (~${d.est_minutes} min)
+          </div>
+        </div>
+      `).addTo(map);
 
       layersRef.current.push(line);
     });
@@ -127,13 +140,13 @@ export default function FleetRebalanceView() {
       <div className="section-header">
         <h1 className="section-title">Predictive Fleet Repositioning & Spatial Staging</h1>
         <p className="section-desc">
-          Proactively stage idle vehicles toward forecasted passenger demand hotspots before requests occur, minimizing rider pickup latency (P95 wait time).
+          Proactively stage idle vehicles toward forecasted passenger demand hotspots before trip requests arrive, minimizing P95 commuter wait times.
         </p>
       </div>
 
       {/* Controls Bar */}
-      <div style={{ display: 'flex', gap: '16px', marginBottom: '24px', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between' }}>
-        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+      <div style={{ display: 'flex', gap: '14px', marginBottom: '18px', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
           {REGIMES.map((r) => {
             const isSel = regime === r.id;
             return (
@@ -148,9 +161,9 @@ export default function FleetRebalanceView() {
           })}
         </div>
 
-        <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: '14px', alignItems: 'center' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={{ fontSize: '0.8125rem', color: 'var(--text-secondary)' }}>Idle Vehicles:</span>
+            <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Idle Fleet:</span>
             <input
               type="range"
               min={10}
@@ -158,19 +171,19 @@ export default function FleetRebalanceView() {
               step={5}
               value={idleCount}
               onChange={(e) => setIdleCount(parseInt(e.target.value, 10))}
-              style={{ width: '120px' }}
+              style={{ width: '110px' }}
             />
-            <span style={{ fontFamily: 'monospace', fontWeight: 600 }}>{idleCount}</span>
+            <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 600, fontSize: '0.8125rem' }}>{idleCount}</span>
           </div>
 
-          <button className="btn btn-ghost" onClick={handleExportDirectives}>
-            📥 Export CSV
+          <button className="btn btn-outline" onClick={handleExportDirectives}>
+            Export CSV
           </button>
         </div>
       </div>
 
       {/* KPI Stats Grid */}
-      <div className="stats-grid" style={{ marginBottom: '24px' }}>
+      <div className="stats-grid" style={{ marginBottom: '18px' }}>
         <div className="stat-card cyan">
           <div className="stat-label">Total Idle Fleet</div>
           <div className="stat-value cyan">{simResult.idleCount}</div>
@@ -186,42 +199,42 @@ export default function FleetRebalanceView() {
         <div className="stat-card amber">
           <div className="stat-label">Deficit Resolution</div>
           <div className="stat-value amber">{simResult.deficitReductionPct}%</div>
-          <div className="stat-detail">{simResult.initialUnmet} → {simResult.remainingUnmet} unmet vehicle deficit</div>
+          <div className="stat-detail">{simResult.initialUnmet} → {simResult.remainingUnmet} unmet vehicle gap</div>
         </div>
 
-        <div className="stat-card purple">
+        <div className="stat-card indigo">
           <div className="stat-label">Rebalance Deadhead VKT</div>
-          <div className="stat-value purple">{simResult.totalVkt} km</div>
+          <div className="stat-value indigo">{simResult.totalVkt} km</div>
           <div className="stat-detail">Total anticipatory fleet mileage</div>
         </div>
       </div>
 
       {/* Main Grid: Map + Table */}
-      <div className="grid-sidebar" style={{ gridTemplateColumns: '1fr 380px' }}>
+      <div className="grid-sidebar" style={{ gridTemplateColumns: '1fr 360px' }}>
         {/* Map Panel */}
-        <div className="card" style={{ padding: '16px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-            <div style={{ fontWeight: 600, fontSize: '0.9375rem' }}>
-              San Francisco Transit Demand Radar & Relocation Vectors
+        <div className="card" style={{ padding: '12px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+            <div style={{ fontWeight: 600, fontSize: '0.8125rem' }}>
+              San Francisco Demand Radar & Staging Directives
             </div>
-            <div style={{ display: 'flex', gap: '12px', fontSize: '0.75rem' }}>
+            <div style={{ display: 'flex', gap: '10px', fontSize: '0.7rem' }}>
               <span style={{ color: '#ef4444' }}>● Deficit Zone</span>
               <span style={{ color: '#10b981' }}>● Surplus Zone</span>
               <span style={{ color: '#f59e0b' }}>- - Relocation Vector</span>
             </div>
           </div>
-          <div ref={mapRef} style={{ width: '100%', height: '480px', borderRadius: '8px', overflow: 'hidden' }} />
+          <div ref={mapRef} style={{ width: '100%', height: '480px', borderRadius: 'var(--radius-sm)', overflow: 'hidden' }} />
         </div>
 
         {/* Sidebar: Zone Status & Directives Log */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
           {/* Zone Allocation Table */}
           <div className="card">
             <div className="card-header">
               <span className="card-title">Zone Supply vs Demand</span>
             </div>
-            <div className="card-body" style={{ padding: '12px' }}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <div className="card-body" style={{ padding: '10px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                 {simResult.zoneStats.map((z) => {
                   const isDef = z.deficit > 0;
                   const isSur = z.deficit < 0;
@@ -232,20 +245,20 @@ export default function FleetRebalanceView() {
                         display: 'flex',
                         justifyContent: 'space-between',
                         alignItems: 'center',
-                        padding: '8px 10px',
-                        background: 'rgba(255,255,255,0.02)',
-                        borderRadius: '6px',
-                        borderLeft: `4px solid ${isDef ? '#ef4444' : isSur ? '#10b981' : '#06b6d4'}`,
+                        padding: '7px 9px',
+                        background: 'var(--bg-hover)',
+                        borderRadius: 'var(--radius-xs)',
+                        borderLeft: `3px solid ${isDef ? '#ef4444' : isSur ? '#10b981' : '#0ea5e9'}`,
                       }}
                     >
                       <div>
-                        <div style={{ fontWeight: 600, fontSize: '0.8125rem' }}>{z.name}</div>
-                        <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
-                          Idle: <strong>{z.initialVehicles}</strong> | Target: <strong>{z.targetVehicles}</strong>
+                        <div style={{ fontWeight: 600, fontSize: '0.775rem' }}>{z.name}</div>
+                        <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>
+                          Idle: <strong>{z.initialVehicles}</strong> · Target: <strong>{z.targetVehicles}</strong>
                         </div>
                       </div>
-                      <span className={`badge ${isDef ? 'danger' : isSur ? 'success' : 'info'}`} style={{ fontSize: '11px' }}>
-                        {isDef ? `-${z.deficit}` : isSur ? `+${Math.abs(z.deficit)}` : 'Balanced'}
+                      <span className={`badge ${isDef ? 'danger' : isSur ? 'success' : 'info'}`} style={{ fontSize: '10px' }}>
+                        {isDef ? `-${z.deficit}` : isSur ? `+${Math.abs(z.deficit)}` : 'BALANCED'}
                       </span>
                     </div>
                   );
@@ -257,33 +270,33 @@ export default function FleetRebalanceView() {
           {/* Directives Log */}
           <div className="card" style={{ flex: 1 }}>
             <div className="card-header">
-              <span className="card-title">Active Staging Instructions</span>
+              <span className="card-title">Staging Instructions</span>
               <span className="badge info">{simResult.directives.length} Issued</span>
             </div>
-            <div className="card-body" style={{ padding: '12px', maxHeight: '220px', overflowY: 'auto' }}>
+            <div className="card-body" style={{ padding: '10px', maxHeight: '220px', overflowY: 'auto' }}>
               {simResult.directives.length === 0 ? (
-                <div style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '20px', fontSize: '0.8125rem' }}>
-                  No relocation needed; fleet is in supply equilibrium.
+                <div style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '16px', fontSize: '0.75rem' }}>
+                  No relocation needed; fleet is in spatial supply equilibrium.
                 </div>
               ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
                   {simResult.directives.map((d) => (
                     <div
                       key={d.id}
                       style={{
                         padding: '6px 8px',
-                        background: 'rgba(245, 158, 11, 0.08)',
-                        borderRadius: '4px',
-                        border: '1px solid rgba(245, 158, 11, 0.2)',
-                        fontSize: '0.75rem',
+                        background: 'var(--accent-warning-subtle)',
+                        borderRadius: 'var(--radius-xs)',
+                        border: '1px solid rgba(245, 158, 11, 0.25)',
+                        fontSize: '0.725rem',
                       }}
                     >
                       <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 600, marginBottom: '2px' }}>
-                        <code style={{ color: '#f59e0b' }}>{d.driver_id}</code>
+                        <code style={{ color: '#fbbf24' }}>{d.driver_id}</code>
                         <span>{d.distance_km} km (~{d.est_minutes}m)</span>
                       </div>
                       <div style={{ color: 'var(--text-secondary)' }}>
-                        {d.from_zone} ➔ {d.to_zone}
+                        {d.from_zone} → {d.to_zone}
                       </div>
                     </div>
                   ))}

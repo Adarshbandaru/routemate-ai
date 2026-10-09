@@ -166,53 +166,53 @@ export default function LiveAPI() {
   return (
     <div className="animate-in" id="live-api-view">
       <div className="section-header">
-        <h2 className="section-title">🔌 Live API Integration</h2>
+        <h2 className="section-title">Live API Integration & Workbench</h2>
         <p className="section-desc">
-          Connect to the RouteMate Python HTTP API for real-time 1-to-N matching and multi-rider batch assignment.
-          Start the local server with{' '}
-          <code style={{ background: 'rgba(99,102,241,0.1)', padding: '2px 6px', borderRadius: '4px', color: '#818cf8', fontSize: '0.75rem' }}>
-            uv run routemate-api --port 8000
+          Test real-time HTTP dispatch endpoints for 1-to-N matching and multi-rider combinatorial batch pooling.
+          Start the local FastAPI server with{' '}
+          <code style={{ background: 'var(--bg-hover)', padding: '2px 6px', borderRadius: '4px', color: '#38bdf8', fontSize: '0.75rem', border: '1px solid var(--border-subtle)' }}>
+            py -m routemate.api --port 8000
           </code>
         </p>
       </div>
 
       {/* Offline Notice Banner */}
       {!health?.online && (
-        <div style={{ background: 'rgba(239, 68, 68, 0.08)', border: '1px solid rgba(239, 68, 68, 0.3)', borderRadius: '8px', padding: '14px', marginBottom: '20px' }}>
+        <div style={{ background: 'var(--accent-danger-subtle)', border: '1px solid rgba(239, 68, 68, 0.3)', borderRadius: 'var(--radius-sm)', padding: '12px 14px', marginBottom: '18px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
             <div>
-              <div style={{ fontWeight: 600, color: '#ef4444', marginBottom: '4px' }}>
-                ⚠️ Backend API Server is Offline ({apiUrl})
+              <div style={{ fontWeight: 600, color: '#f87171', fontSize: '0.8125rem', marginBottom: '2px' }}>
+                Backend API Server is Offline ({apiUrl})
               </div>
-              <div style={{ fontSize: '0.8125rem', color: 'var(--text-secondary)' }}>
-                Start the local API with <code>uv run routemate-api --port 8000</code> or toggle In-Browser Simulation mode below.
+              <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+                Start the backend server or toggle In-Browser Simulator mode to execute matching logic client-side.
               </div>
             </div>
             <button
               className={`btn btn-sm ${useLocalFallback ? 'btn-primary' : 'btn-outline'}`}
               onClick={() => setUseLocalFallback(!useLocalFallback)}
             >
-              {useLocalFallback ? '✓ In-Browser Engine Active' : '⚡ Use In-Browser Engine'}
+              {useLocalFallback ? 'In-Browser Simulator Active' : 'Enable In-Browser Engine'}
             </button>
           </div>
         </div>
       )}
 
       {/* Connection panel */}
-      <div className="card" style={{ marginBottom: '24px' }}>
+      <div className="card" style={{ marginBottom: '18px' }}>
         <div className="card-header">
-          <span className="card-title">🌐 Connection Status</span>
+          <span className="card-title">Endpoint Connection Status</span>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <div className={`status-dot ${health?.online ? 'online' : 'offline'}`} />
-            <span style={{ fontSize: '0.75rem', fontWeight: 600, color: health?.online ? '#10b981' : '#ef4444' }}>
-              {health?.online ? `Online (${health.api_version || 'v1'})` : health?.error || 'Offline'}
+            <span style={{ fontSize: '0.75rem', fontWeight: 600, color: health?.online ? '#34d399' : '#f87171', fontFamily: 'var(--font-mono)' }}>
+              {health?.online ? `ONLINE (${health.api_version || 'v1'})` : health?.error || 'OFFLINE'}
             </span>
           </div>
         </div>
         <div className="card-body">
-          <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-end', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-end', flexWrap: 'wrap' }}>
             <div className="form-group" style={{ flex: 1, minWidth: '220px' }}>
-              <label className="form-label">Base API URL</label>
+              <label className="form-label">Base URL</label>
               <input
                 className="form-input"
                 value={apiUrl}
@@ -220,21 +220,21 @@ export default function LiveAPI() {
                 placeholder="http://127.0.0.1:8000"
               />
             </div>
-            <button className="btn btn-ghost" onClick={checkHealth}>
-              🔄 Check Health
+            <button className="btn btn-outline" onClick={checkHealth}>
+              Check Health
             </button>
             <button
-              className={`btn ${polling ? 'btn-primary' : 'btn-ghost'}`}
+              className={`btn ${polling ? 'btn-primary' : 'btn-outline'}`}
               onClick={() => setPolling(!polling)}
             >
-              {polling ? '⏸️ Stop Auto-Poll' : '📡 Auto-Poll (5s)'}
+              {polling ? 'Stop Polling' : 'Auto-Poll (5s)'}
             </button>
             <button
-              className={`btn btn-sm ${useLocalFallback ? 'btn-primary' : 'btn-ghost'}`}
+              className={`btn btn-sm ${useLocalFallback ? 'btn-primary' : 'btn-outline'}`}
               onClick={() => setUseLocalFallback(!useLocalFallback)}
               title="Execute matching logic inside the browser without HTTP backend"
             >
-              {useLocalFallback ? '💻 Client Sim: ON' : '💻 Client Sim: OFF'}
+              {useLocalFallback ? 'Client Engine: Active' : 'Client Engine: Inactive'}
             </button>
           </div>
         </div>
@@ -244,24 +244,24 @@ export default function LiveAPI() {
         {/* Request panel */}
         <div className="card">
           <div className="card-header">
-            <span className="card-title">📤 Dispatch Request</span>
+            <span className="card-title">Request Configuration</span>
             <div style={{ display: 'flex', gap: '4px' }}>
               <button
                 className={`btn btn-sm ${endpoint === 'matches' ? 'btn-primary' : 'btn-ghost'}`}
                 onClick={() => setEndpoint('matches')}
               >
-                /v1/matches
+                POST /v1/matches
               </button>
               <button
                 className={`btn btn-sm ${endpoint === 'assignments' ? 'btn-primary' : 'btn-ghost'}`}
                 onClick={() => setEndpoint('assignments')}
               >
-                /v1/assignments
+                POST /v1/assignments
               </button>
             </div>
           </div>
-          <div className="card-body" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+          <div className="card-body" style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+            <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
               <div className="form-group">
                 <label className="form-label">Seed</label>
                 <input
@@ -269,7 +269,7 @@ export default function LiveAPI() {
                   type="number"
                   value={seed}
                   onChange={(e) => setSeed(parseInt(e.target.value, 10) || 0)}
-                  style={{ width: '85px' }}
+                  style={{ width: '80px' }}
                 />
               </div>
 
@@ -303,7 +303,7 @@ export default function LiveAPI() {
 
               {endpoint === 'matches' ? (
                 <div className="form-group">
-                  <label className="form-label">Top K</label>
+                  <label className="form-label">Top-K</label>
                   <select
                     className="form-select"
                     value={topK}
@@ -316,7 +316,7 @@ export default function LiveAPI() {
                 </div>
               ) : (
                 <div className="form-group">
-                  <label className="form-label">Algorithm</label>
+                  <label className="form-label">Solver</label>
                   <select
                     className="form-select"
                     value={batchMethod}
@@ -324,7 +324,7 @@ export default function LiveAPI() {
                   >
                     <option value="greedy">Greedy Priority</option>
                     <option value="auction">Auction Swap</option>
-                    <option value="optimal">Branch-and-Bound (Optimal)</option>
+                    <option value="optimal">Branch-and-Bound (Exact)</option>
                   </select>
                 </div>
               )}
@@ -334,28 +334,22 @@ export default function LiveAPI() {
               <button
                 className="btn btn-primary"
                 onClick={sendRequest}
-                disabled={loading || !health?.online}
+                disabled={loading || (!health?.online && !useLocalFallback)}
               >
-                {loading ? (
-                  <>
-                    <div className="spinner" style={{ width: '14px', height: '14px' }} /> Sending…
-                  </>
-                ) : (
-                  `🚀 Send to ${endpoint === 'matches' ? '/v1/matches' : '/v1/assignments'}`
-                )}
+                {loading ? 'Dispatching…' : `Dispatch to ${endpoint === 'matches' ? '/v1/matches' : '/v1/assignments'}`}
               </button>
               <button
-                className="btn btn-ghost"
+                className="btn btn-outline"
                 onClick={() => setSeed(Math.floor(Math.random() * 1000))}
               >
-                🎲 Random Seed
+                Random Seed
               </button>
             </div>
 
             {error && (
               <div className="rejection-reasons">
-                <div style={{ fontSize: '0.75rem', fontWeight: 600, marginBottom: '4px' }}>Request Error</div>
-                <div style={{ fontSize: '0.8125rem' }}>{error}</div>
+                <div style={{ fontSize: '0.75rem', fontWeight: 600, marginBottom: '2px' }}>Request Error</div>
+                <div style={{ fontSize: '0.75rem', fontFamily: 'var(--font-mono)' }}>{error}</div>
               </div>
             )}
           </div>
@@ -364,108 +358,112 @@ export default function LiveAPI() {
         {/* Response panel */}
         <div className="card">
           <div className="card-header">
-            <span className="card-title">📥 API Response</span>
+            <span className="card-title">Response Payload</span>
             {result && (
               <button
-                className="btn btn-ghost btn-sm"
+                className="btn btn-outline btn-sm"
                 onClick={() => exportToJSON(result, `api_response_${result.type}_seed${seed}.json`)}
               >
-                💾 Export JSON
+                Export JSON
               </button>
             )}
           </div>
           <div className="card-body">
             {result ? (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
                 {result.type === 'matches' ? (
                   <>
-                    <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-                      <div className="mini-stat">
-                        <span className="mini-stat-label">Rank Method</span>
-                        <span className="mini-stat-value" style={{ color: '#818cf8' }}>
-                          {result.rank_method}
-                        </span>
+                    <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                      <div className="stat-card indigo" style={{ padding: '8px 12px' }}>
+                        <div className="stat-label">Method</div>
+                        <div style={{ fontSize: '0.875rem', fontWeight: 600, fontFamily: 'var(--font-mono)' }}>{result.rank_method}</div>
                       </div>
-                      <div className="mini-stat">
-                        <span className="mini-stat-label">Retrieved</span>
-                        <span className="mini-stat-value">{result.retrieved_count}</span>
+                      <div className="stat-card cyan" style={{ padding: '8px 12px' }}>
+                        <div className="stat-label">Retrieved</div>
+                        <div style={{ fontSize: '0.875rem', fontWeight: 600, fontFamily: 'var(--font-mono)' }}>{result.retrieved_count}</div>
                       </div>
-                      <div className="mini-stat">
-                        <span className="mini-stat-label">Eligible</span>
-                        <span className="mini-stat-value" style={{ color: '#10b981' }}>
-                          {result.eligible_count}
-                        </span>
+                      <div className="stat-card green" style={{ padding: '8px 12px' }}>
+                        <div className="stat-label">Eligible</div>
+                        <div style={{ fontSize: '0.875rem', fontWeight: 600, fontFamily: 'var(--font-mono)', color: '#34d399' }}>{result.eligible_count}</div>
                       </div>
                     </div>
 
                     {result.recommendations?.length > 0 && (
                       <div>
-                        <div style={{ fontSize: '0.6875rem', color: '#64748b', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px' }}>
+                        <div style={{ fontSize: '0.6875rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '6px' }}>
                           Top Ranked Recommendations
                         </div>
-                        {result.recommendations.map((rec) => (
-                          <div key={rec.driver_id} className="recommendation-card">
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                              <span style={{ fontWeight: 600, fontSize: '0.8125rem' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                          {result.recommendations.map((rec) => (
+                            <div key={rec.driver_id} style={{
+                              padding: '8px 10px',
+                              background: 'var(--bg-hover)',
+                              borderRadius: 'var(--radius-xs)',
+                              border: '1px solid var(--border-subtle)',
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                              alignItems: 'center',
+                            }}>
+                              <span style={{ fontWeight: 600, fontSize: '0.8125rem', fontFamily: 'var(--font-mono)' }}>
                                 #{rec.rank} {rec.driver_id}
                               </span>
                               <span style={{
                                 fontWeight: 700,
                                 fontSize: '0.875rem',
-                                color: rec.score >= 0.7 ? '#10b981' : rec.score >= 0.5 ? '#f59e0b' : '#ef4444',
+                                fontFamily: 'var(--font-mono)',
+                                color: rec.score >= 0.7 ? '#34d399' : rec.score >= 0.5 ? '#fbbf24' : '#f87171',
                               }}>
                                 {typeof rec.score === 'number' && rec.score <= 1
                                   ? (rec.score * 100).toFixed(1)
-                                  : rec.score?.toFixed?.(1)}
+                                  : rec.score?.toFixed?.(1)} pts
                               </span>
                             </div>
-                          </div>
-                        ))}
+                          ))}
+                        </div>
                       </div>
                     )}
                   </>
                 ) : (
                   <>
-                    <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-                      <div className="mini-stat">
-                        <span className="mini-stat-label">Method</span>
-                        <span className="mini-stat-value" style={{ color: '#818cf8', textTransform: 'capitalize' }}>
-                          {result.method}
-                        </span>
+                    <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                      <div className="stat-card indigo" style={{ padding: '8px 12px' }}>
+                        <div className="stat-label">Method</div>
+                        <div style={{ fontSize: '0.875rem', fontWeight: 600, fontFamily: 'var(--font-mono)' }}>{result.method}</div>
                       </div>
-                      <div className="mini-stat">
-                        <span className="mini-stat-label">Matched Riders</span>
-                        <span className="mini-stat-value" style={{ color: '#10b981' }}>
-                          {result.matched_rider_count}
-                        </span>
+                      <div className="stat-card green" style={{ padding: '8px 12px' }}>
+                        <div className="stat-label">Matched Riders</div>
+                        <div style={{ fontSize: '0.875rem', fontWeight: 600, fontFamily: 'var(--font-mono)', color: '#34d399' }}>{result.matched_rider_count}</div>
                       </div>
-                      <div className="mini-stat">
-                        <span className="mini-stat-label">Drivers Used</span>
-                        <span className="mini-stat-value">{result.matched_driver_count}</span>
+                      <div className="stat-card cyan" style={{ padding: '8px 12px' }}>
+                        <div className="stat-label">Vehicles Used</div>
+                        <div style={{ fontSize: '0.875rem', fontWeight: 600, fontFamily: 'var(--font-mono)' }}>{result.matched_driver_count}</div>
                       </div>
-                      <div className="mini-stat">
-                        <span className="mini-stat-label">Objective Value</span>
-                        <span className="mini-stat-value" style={{ color: '#f59e0b' }}>
-                          {result.objective_value}
-                        </span>
+                      <div className="stat-card amber" style={{ padding: '8px 12px' }}>
+                        <div className="stat-label">Objective Value</div>
+                        <div style={{ fontSize: '0.875rem', fontWeight: 600, fontFamily: 'var(--font-mono)', color: '#fbbf24' }}>{result.objective_value}</div>
                       </div>
                     </div>
 
                     {result.groups?.length > 0 ? (
                       <div>
-                        <div style={{ fontSize: '0.6875rem', color: '#64748b', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px' }}>
-                          Formed Vehicle Groups ({result.groups.length})
+                        <div style={{ fontSize: '0.6875rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '6px' }}>
+                          Formed Vehicle Pools ({result.groups.length})
                         </div>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                           {result.groups.map((g) => (
-                            <div key={g.driver_id} className="recommendation-card">
+                            <div key={g.driver_id} style={{
+                              padding: '8px 10px',
+                              background: 'var(--bg-hover)',
+                              borderRadius: 'var(--radius-xs)',
+                              border: '1px solid var(--border-subtle)',
+                            }}>
                               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                <span style={{ fontWeight: 600, fontSize: '0.8125rem' }}>
-                                  🚐 {g.driver_id} ({g.seats_used} seats used)
+                                <span style={{ fontWeight: 600, fontSize: '0.8125rem', fontFamily: 'var(--font-mono)' }}>
+                                  {g.driver_id} ({g.seats_used} seats allocated)
                                 </span>
                                 <span className="badge success">Score: {g.group_score}</span>
                               </div>
-                              <div style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '4px' }}>
+                              <div style={{ fontSize: '0.725rem', color: 'var(--text-secondary)', marginTop: '4px' }}>
                                 Assigned Riders: {g.rider_ids.join(', ')}
                               </div>
                             </div>
@@ -473,14 +471,14 @@ export default function LiveAPI() {
                         </div>
                       </div>
                     ) : (
-                      <div style={{ fontSize: '0.75rem', color: '#94a3b8' }}>No vehicle groups formed.</div>
+                      <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>No vehicle pools formed.</div>
                     )}
                   </>
                 )}
 
                 {/* Timing */}
                 {result.timing_seconds && (
-                  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                  <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
                     {Object.entries(result.timing_seconds).map(([k, v]) => (
                       <span key={k} className="badge info" style={{ fontSize: '10px' }}>
                         {k}: {(v * 1000).toFixed(1)}ms
@@ -490,13 +488,15 @@ export default function LiveAPI() {
                 )}
               </div>
             ) : (
-              <div className="empty-state" style={{ padding: '32px 16px' }}>
-                <div className="empty-state-icon">📡</div>
-                <div className="empty-state-text">No Response Yet</div>
+              <div className="empty-state">
+                <svg className="empty-state-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                  <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                </svg>
+                <div className="empty-state-text">No Response Payload</div>
                 <div className="empty-state-hint">
                   {health?.online
-                    ? 'Click Send Request above to inspect live backend output'
-                    : 'Launch py -m routemate.api to connect the live backend'}
+                    ? 'Click Dispatch above to inspect live backend response'
+                    : 'Enable in-browser simulator or launch FastAPI backend'}
                 </div>
               </div>
             )}
@@ -506,21 +506,21 @@ export default function LiveAPI() {
 
       {/* Request log */}
       {requestLog.length > 0 && (
-        <div className="card" style={{ marginTop: '24px' }}>
+        <div className="card" style={{ marginTop: '18px' }}>
           <div className="card-header">
-            <span className="card-title">📜 Request History</span>
+            <span className="card-title">Request Execution Log</span>
             <div style={{ display: 'flex', gap: '8px' }}>
-              <span className="badge info">{requestLog.length} requests</span>
+              <span className="badge info">{requestLog.length} calls</span>
               <button className="btn btn-ghost btn-sm" onClick={() => setRequestLog([])}>
-                Clear
+                Clear Log
               </button>
             </div>
           </div>
-          <div className="card-body" style={{ maxHeight: '250px', overflowY: 'auto' }}>
+          <div className="card-body" style={{ maxHeight: '240px', overflowY: 'auto', padding: 0 }}>
             <table className="data-table">
               <thead>
                 <tr>
-                  <th>Time</th>
+                  <th>Timestamp</th>
                   <th>Endpoint</th>
                   <th>Seed</th>
                   <th>Scope</th>
@@ -532,7 +532,7 @@ export default function LiveAPI() {
               <tbody>
                 {requestLog.map((log, i) => (
                   <tr key={i}>
-                    <td style={{ fontSize: '0.6875rem', fontFamily: "'Courier New', monospace" }}>
+                    <td style={{ fontSize: '0.7rem', fontFamily: 'var(--font-mono)' }}>
                       {log.timestamp.split('T')[1]?.slice(0, 12)}
                     </td>
                     <td>
@@ -544,11 +544,11 @@ export default function LiveAPI() {
                     <td>{log.driverCount}</td>
                     <td>
                       <span className={`badge ${log.status === 'ok' ? 'success' : 'danger'}`} style={{ fontSize: '10px' }}>
-                        {log.status}
+                        {log.status.toUpperCase()}
                       </span>
                     </td>
                     <td style={{ fontSize: '0.75rem' }}>{log.summary}</td>
-                    <td style={{ fontWeight: 600 }}>{log.latencyMs}ms</td>
+                    <td style={{ fontWeight: 600, fontFamily: 'var(--font-mono)' }}>{log.latencyMs}ms</td>
                   </tr>
                 ))}
               </tbody>
