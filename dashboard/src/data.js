@@ -31,8 +31,19 @@ function coordFromKm(x, y) {
   return { latitude: y / 111.195, longitude: x / 111.195 };
 }
 
-function coordToLatLng(c) {
+export const SF_ANCHOR = { latitude: 37.7749, longitude: -122.4194 };
+
+export function coordToLL(c, projectToSF = true) {
+  if (!c) return [37.7749, -122.4194];
+  if (projectToSF) {
+    if (Math.abs(c.latitude) > 20) return [c.latitude, c.longitude];
+    return [c.latitude + SF_ANCHOR.latitude, c.longitude + SF_ANCHOR.longitude];
+  }
   return [c.latitude, c.longitude];
+}
+
+export function coordToLatLng(c) {
+  return coordToLL(c, true);
 }
 
 const EARTH_R = 6371.0088;
@@ -255,10 +266,6 @@ export function runMatchingPipeline(rider, drivers) {
       top_score: eligible.length ? eligible[0].score : 0,
     },
   };
-}
-
-export function coordToLL(c) {
-  return coordToLatLng(c);
 }
 
 export { haversineKm, polylineLength };

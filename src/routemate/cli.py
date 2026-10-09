@@ -274,6 +274,53 @@ def run_synthesis_demo():
     print("=" * 110)
 
 
+def run_real_benchmark_demo():
+    from .real_benchmark import run_real_city_benchmark
+    print("=" * 80)
+    print("RouteMate Real-World Urban Road Network Benchmark")
+    print("Evaluating Downtown San Francisco Transit Topology vs Geometric Baseline")
+    print("=" * 80)
+    rep = run_real_city_benchmark()
+    print(f"Trips Evaluated:             {rep.total_trips_evaluated}")
+    print(f"Mean Circuity Factor:        {rep.mean_circuity_factor:.2f}x (Range: {rep.min_circuity_factor:.2f}x - {rep.max_circuity_factor:.2f}x)")
+    print(f"Mean Travel Speed:           {rep.mean_speed_kmh:.1f} km/h")
+    print(f"Mean Trip Duration:          {rep.mean_travel_time_seconds / 60.0:.1f} min")
+    print(f"Euclidean False-Positives:   {rep.euclidean_false_positive_rate_pct:.1f}%")
+    print(f"Detour Underestimation:      {rep.detour_underestimation_mean_km:.2f} km")
+    print("-" * 80)
+    print(f"{'Trip ID':<20} | {'Origin':<20} | {'Destination':<20} | {'Circuity'}")
+    print("-" * 80)
+    for s in rep.sample_evaluations:
+        print(f"{s['trip_id']:<20} | {s['origin']:<20} | {s['destination']:<20} | {s['circuity']}x")
+    print("=" * 80)
+
+
+def run_repositioning_demo():
+    from .repositioning import PredictiveFleetRebalancer, SF_TRANSIT_ZONES
+    from .synthetic import generate_dataset
+    print("=" * 80)
+    print("RouteMate Predictive Fleet Repositioning & Spatial Rebalancing")
+    print("Pre-Dispatch Vehicle Staging across San Francisco Transit Hubs")
+    print("=" * 80)
+    ds = generate_dataset(seeds=(42,), requests_per_scenario=1, scenarios={"dense": 20})
+    idle_drivers = ds[0].drivers
+    rebalancer = PredictiveFleetRebalancer(zones=SF_TRANSIT_ZONES)
+    demand_mults = {"Z3_caltrain": 1.8, "Z2_soma": 1.4, "Z1_fidi": 0.6}
+    rep = rebalancer.compute_rebalancing(idle_drivers, demand_multipliers=demand_mults)
+    print(f"Total Idle Fleet:            {rep.total_idle_vehicles} vehicles")
+    print(f"Repositioning Directives:    {rep.vehicles_repositioned} relocations issued")
+    print(f"Unmet Demand Deficit:        {rep.unmet_demand_before_rebalance} -> {rep.unmet_demand_after_rebalance} ({rep.demand_fulfillment_gain_pct:.1f}% gain)")
+    print(f"Mean Deadhead Mileage:       {rep.mean_relocation_distance_km:.2f} km (P95: {rep.p95_relocation_distance_km:.2f} km)")
+    print(f"Total Fleet Staging VKT:     {rep.total_rebalance_vkt_km:.2f} km")
+    print(f"Solver Compute Latency:      {rep.solver_latency_ms:.2f} ms")
+    print("-" * 80)
+    print(f"{'Driver ID':<22} | {'Origin Zone':<16} | {'Target Zone':<16} | {'Deadhead'}")
+    print("-" * 80)
+    for d in rep.directives[:8]:
+        print(f"{d.driver_id:<22} | {d.origin_zone:<16} | {d.target_zone:<16} | {d.relocation_distance_km:.2f} km")
+    print("=" * 80)
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description="RouteMate CLI — Matching and Batch Assignment Prototype")
     parser.add_argument("--demo", action="store_true", help="Run 1-on-1 heuristic journey comparison (default)")
@@ -287,6 +334,8 @@ def main(argv=None):
     parser.add_argument("--recourse-benchmark", "--online-recourse", action="store_true", help="Run Experiment 012 dynamic curbside dwell & recourse benchmark")
     parser.add_argument("--rolling-dispatch-benchmark", "--rolling-horizon-benchmark", "--rolling-dispatch", action="store_true", help="Run Experiment 013 fleet-wide rolling-horizon dispatch benchmark")
     parser.add_argument("--synthesis-benchmark", "--research-synthesis", "--synthesis", action="store_true", help="Run Experiment 014 research synthesis & cross-experiment analysis")
+    parser.add_argument("--real-city-benchmark", "--real-benchmark", action="store_true", help="Run empirical San Francisco downtown road network benchmark")
+    parser.add_argument("--repositioning-benchmark", "--fleet-rebalance", action="store_true", help="Run predictive fleet repositioning & spatial rebalancing simulation")
     parser.add_argument("--api", action="store_true", help="Launch the local prototype HTTP API")
     parser.add_argument("--port", type=int, default=8000, help="Port for HTTP API (used with --api)")
     args = parser.parse_args(argv)
@@ -314,6 +363,10 @@ def main(argv=None):
         run_rolling_dispatch_benchmark_demo()
     elif args.synthesis_benchmark:
         run_synthesis_demo()
+    elif args.real_city_benchmark:
+        run_real_benchmark_demo()
+    elif args.repositioning_benchmark:
+        run_repositioning_demo()
     else:
         run_demo()
 

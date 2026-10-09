@@ -157,17 +157,26 @@ All metrics correspond directly to reproducible experimental artifacts stored un
    uv pip install -e .
    ```
 
-2. Run the complete automated test suite (153 unit tests):
+2. Run the complete automated test suite (158 unit tests):
    ```bash
    uv run python -m unittest discover tests
    ```
-   *Expected outcome: `Ran 153 tests ... OK`*
+   *Expected outcome: `Ran 158 tests ... OK`*
 
 3. Launch the local JSON API server:
    ```bash
    uv run routemate-api --port 8000
    ```
    *The server starts listening on `http://127.0.0.1:8000` with CORS support.*
+
+4. Run CLI benchmarks:
+   ```bash
+   # Empirical San Francisco downtown road network benchmark
+   uv run python -m routemate.cli --real-city-benchmark
+
+   # Predictive fleet repositioning & spatial rebalancing
+   uv run python -m routemate.cli --repositioning-benchmark
+   ```
 
 ---
 
@@ -195,7 +204,22 @@ All metrics correspond directly to reproducible experimental artifacts stored un
    ```bash
    npm run build
    ```
-   *Expected outcome: `✓ built in ~2s` with optimized assets in `dist/`.*
+   *Expected outcome: `✓ built in ~400ms` with optimized assets in `dist/`.*
+
+---
+
+### Step 3: One-Command Docker Setup 🐳
+
+You can spin up both the FastAPI backend and React frontend dashboard in a single command:
+
+```bash
+docker compose up --build
+```
+
+- API server: `http://localhost:8000` (with `/health` check)
+- Interactive Dashboard: `http://localhost:5173`
+
+Continuous Integration is automated via GitHub Actions (`.github/workflows/ci.yml`) on every push and PR across Python 3.10/3.11/3.12 and Node 20.
 
 ---
 

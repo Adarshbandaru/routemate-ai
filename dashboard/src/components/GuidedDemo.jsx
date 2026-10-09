@@ -6,6 +6,7 @@ import {
   generateBatchScenario,
   runBatchAssignment,
 } from '../data';
+import RouteMap from './RouteMap';
 
 const STEPS = [
   { id: 'request', num: 1, title: 'Create Ride Request', icon: '📍' },
@@ -24,6 +25,7 @@ export default function GuidedDemo({ onNavigateTab }) {
   const [driverCount, setDriverCount] = useState(10);
   const [selectedDriverId, setSelectedDriverId] = useState(null);
   const [dispatchPolicy, setDispatchPolicy] = useState('event_driven_rolling');
+  const [incidentActive, setIncidentActive] = useState(false);
 
   const preset = useMemo(
     () => DEMO_RIDE_PRESETS.find((p) => p.id === selectedPreset) || DEMO_RIDE_PRESETS[0],
@@ -33,16 +35,38 @@ export default function GuidedDemo({ onNavigateTab }) {
   // Generate scenario for matching
   const { rider, drivers } = useMemo(() => {
     const base = generateSyntheticScenario(seed, driverCount);
+    // Interpolate route from preset start to destination
+    const route = [0, 0.25, 0.5, 0.75, 1].map((t) => ({
+      latitude: preset.start.latitude + (preset.destination.latitude - preset.start.latitude) * t,
+      longitude: preset.start.longitude + (preset.destination.longitude - preset.start.longitude) * t,
+    }));
     // Overlay preset parameters onto the rider
     const customizedRider = {
       ...base.rider,
       start: preset.start,
       destination: preset.destination,
+      route,
       seats_requested: customSeats,
       departure: preset.departure,
     };
     return { rider: customizedRider, drivers: base.drivers };
   }, [seed, driverCount, preset, customSeats]);
+
+  const incidentObj = useMemo(() => {
+    if (!incidentActive || !rider?.start || !rider?.destination) return null;
+    const midLat = (rider.start.latitude + rider.destination.latitude) / 2;
+    const midLon = (rider.start.longitude + rider.destination.longitude) / 2;
+    return {
+      coordinate: { latitude: midLat + 0.001, longitude: midLon },
+      label: 'Sudden Congestion / Closed Edge (+1.26 km)',
+      detourRoute: [
+        rider.start,
+        { latitude: midLat + 0.004, longitude: midLon - 0.003 },
+        { latitude: midLat + 0.002, longitude: midLon + 0.003 },
+        rider.destination,
+      ],
+    };
+  }, [incidentActive, rider]);
 
   const matchResults = useMemo(
     () => runMatchingPipeline(rider, drivers),
@@ -204,6 +228,14 @@ export default function GuidedDemo({ onNavigateTab }) {
                 </div>
               </div>
 
+              {/* Map Preview of Request */}
+              <div style={{ marginBottom: '20px' }}>
+                <div style={{ fontSize: '0.8125rem', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '8px', letterSpacing: '0.5px' }}>
+                  GEOSPATIAL ROUTE PREVIEW (SAN FRANCISCO CORRIDOR)
+                </div>
+                <RouteMap rider={rider} height="280px" />
+              </div>
+
               {/* Bottom Actions */}
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
                 <div style={{ display: 'flex', gap: '16px', alignItems: 'center', flexWrap: 'wrap' }}>
@@ -324,6 +356,26 @@ export default function GuidedDemo({ onNavigateTab }) {
                 </div>
               )}
 
+              {/* Map of Compatibility */}
+              <div style={{ marginBottom: '20px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                  <div style={{ fontSize: '0.8125rem', fontWeight: 600, color: 'var(--text-muted)', letterSpacing: '0.5px' }}>
+                    CORRIDOR COMPATIBILITY MAP (CLICK ANY DRIVER ROW ABOVE TO HIGHLIGHT ROUTE)
+                  </div>
+                  <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+                    Inspecting: <code style={{ color: '#06b6d4' }}>{activeDriver?.driver_id}</code>
+                  </span>
+                </div>
+                <RouteMap
+                  rider={rider}
+                  drivers={drivers}
+                  matchResults={matchResults}
+                  selectedDriver={activeDriver?.driver_id}
+                  onSelectDriver={(id) => setSelectedDriverId(id)}
+                  height="320px"
+                />
+              </div>
+
               {/* Navigation */}
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <button className="btn btn-outline" onClick={prevStep}>← Back</button>
@@ -424,6 +476,26 @@ export default function GuidedDemo({ onNavigateTab }) {
                     </div>
                   </div>
                 )}
+              </div>
+
+              {/* Map of Ranked Routes */}
+              <div style={{ marginBottom: '20px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                  <div style={{ fontSize: '0.8125rem', fontWeight: 600, color: 'var(--text-muted)', letterSpacing: '0.5px' }}>
+                    TOP-RANKED CANDIDATE CORRIDORS (CORRIDOR OVERLAP VISUALIZATION)
+                  </div>
+                  <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+                    Inspecting: <code style={{ color: '#10b981' }}>{activeDriver?.driver_id}</code> ({activeDriver?.score?.toFixed(1)} pts)
+                  </span>
+                </div>
+                <RouteMap
+                  rider={rider}
+                  drivers={eligibleDrivers.map((e) => drivers.find((d) => d.journey_id === e.driver_id)).filter(Boolean)}
+                  matchResults={matchResults}
+                  selectedDriver={activeDriver?.driver_id}
+                  onSelectDriver={(id) => setSelectedDriverId(id)}
+                  height="320px"
+                />
               </div>
 
               {/* Navigation */}
@@ -608,6 +680,31 @@ export default function GuidedDemo({ onNavigateTab }) {
                   <div className="stat-value purple">0</div>
                   <div className="stat-detail">Zero passenger churn / disruption</div>
                 </div>
+              </div>
+
+              {/* Recourse Detour & Dispatch Map Preview */}
+              <div style={{ marginBottom: '20px', padding: '16px', background: 'rgba(255,255,255,0.02)', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', flexWrap: 'wrap', gap: '8px' }}>
+                  <div>
+                    <div style={{ fontWeight: 600, fontSize: '0.875rem' }}>Dynamic Recourse Detour Simulator</div>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+                      Simulate sudden mid-corridor incident (Exp 012) and view dynamic A* detouring vs rolling dispatch
+                    </div>
+                  </div>
+                  <button
+                    className={`btn btn-sm ${incidentActive ? 'btn-danger' : 'btn-outline'}`}
+                    onClick={() => setIncidentActive(!incidentActive)}
+                  >
+                    {incidentActive ? '⚠️ Incident Active (Detour Engaged)' : '⚡ Trigger Road Closure'}
+                  </button>
+                </div>
+                <RouteMap
+                  rider={rider}
+                  drivers={eligibleDrivers.slice(0, 3).map((e) => drivers.find((d) => d.journey_id === e.driver_id)).filter(Boolean)}
+                  matchResults={matchResults}
+                  incident={incidentObj}
+                  height="300px"
+                />
               </div>
 
               {/* Navigation */}

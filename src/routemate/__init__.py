@@ -131,6 +131,21 @@ from .synthesis import (
     save_experiment_014_outputs,
 )
 
+from .real_benchmark import (
+    create_san_francisco_road_network,
+    run_real_city_benchmark,
+    RealBenchmarkResult,
+    SF_INTERSECTIONS,
+)
+
+from .repositioning import (
+    TransitZone,
+    RebalanceDirective,
+    RepositioningReport,
+    PredictiveFleetRebalancer,
+    SF_TRANSIT_ZONES,
+)
+
 __all__ = [
     "Coordinate", "Journey", "Vehicle", "VerificationContext",
     "haversine_km", "polyline_length_km", "route_similarity",
@@ -142,6 +157,8 @@ __all__ = [
     "DeterministicGeometricRouter", "MockRoutingProvider",
     "RoadNetwork", "NetworkGraphRouter", "create_urban_grid_network",
     "create_osm_sf_downtown_network",
+    "create_san_francisco_road_network", "run_real_city_benchmark", "RealBenchmarkResult", "SF_INTERSECTIONS",
+    "TransitZone", "RebalanceDirective", "RepositioningReport", "PredictiveFleetRebalancer", "SF_TRANSIT_ZONES",
     "compute_road_detour", "RoadDetourResult", "OSRMClientRouter",
     "RoutingError", "RouteNotFoundError", "ProviderUnavailableError", "InvalidQueryError",
     "RouteComparisonPoint", "DetourComparisonPoint", "RoadBenchmarkReport", "run_road_network_benchmark",

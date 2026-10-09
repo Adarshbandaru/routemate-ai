@@ -54,7 +54,7 @@ export default function BatchAssignment() {
       mapInstanceRef.current = L.map(mapRef.current, {
         zoomControl: true,
         attributionControl: true,
-      }).setView([0, 0.036], 13);
+      }).setView([37.7749, -122.4194], 13);
       L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
         attribution: '&copy; OpenStreetMap &copy; CARTO',
         subdomains: 'abcd',
@@ -62,6 +62,13 @@ export default function BatchAssignment() {
       }).addTo(mapInstanceRef.current);
     }
     const map = mapInstanceRef.current;
+    setTimeout(() => {
+      try {
+        map.invalidateSize();
+      } catch {
+        // map unmounted
+      }
+    }, 150);
     layersRef.current.forEach((l) => map.removeLayer(l));
     layersRef.current = [];
 
