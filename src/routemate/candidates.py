@@ -6,7 +6,7 @@ feasibility, and feature calculation does not discard an edge.
 from dataclasses import dataclass
 from time import perf_counter
 from types import MappingProxyType
-from typing import Mapping, Sequence, Tuple
+from typing import Mapping, Optional, Sequence, Tuple
 
 from .features import calculate_features
 from .models import Journey
