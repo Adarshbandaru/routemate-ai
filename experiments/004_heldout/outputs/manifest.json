@@ -1,0 +1,64 @@
+{
+  "code_sha256": {
+    "src/routemate/ablation.py": "c42022cb1f307ba7afd9f469200e8dbcd3e7bd09228469df3749dbde7eaebe0d",
+    "src/routemate/candidates.py": "be4ab18bffeae9fe82647b1e648fa89cdf770f50d2beaa83bbac3adcdd7cd9e3",
+    "src/routemate/experiment.py": "5685f3d362bd3c5a90ada32b30d1d348c1c70f0f4265f0aaa5aced5ab9761119",
+    "src/routemate/features.py": "47658b5efe8452158510209028d60d449d73adc5ac0a03d243429214a2bb2572",
+    "src/routemate/heldout.py": "530c2640ee3a1b5f40db741ce0f2c8ce56cef891de2c18ea9c87f65feed581a1",
+    "src/routemate/models.py": "cd783df1f0d85470813f42f1c3faef94903bad167f5afac4f8b179067de7fd02",
+    "src/routemate/synthetic.py": "ba10a82cacfabb96af7e5bc717c755f5f4ca5ebee00e42b558e4bcf8220a6168"
+  },
+  "dataset_version": "latent-corridor-v1",
+  "experiment_version": "heldout-experiment-v1",
+  "hard_gates": [
+    "identity verification",
+    "vehicle verification",
+    "safety flags",
+    "capacity",
+    "direction compatibility",
+    "pickup <=2km",
+    "destination <=3km",
+    "departure <=30min",
+    "detour <=5km"
+  ],
+  "heldout_label_type": "synthetic_heldout",
+  "k": 3,
+  "label_model": {
+    "features": [
+      "normalized geometric detour",
+      "destination distance",
+      "direction similarity",
+      "departure difference",
+      "provider capacity slack",
+      "provider-specific latent reliability",
+      "route-shape acceptance"
+    ],
+    "formula": "p=clip(0.02+0.94*sigmoid(1.65*(utility-0.45)),0.01,0.97); utility=(0.27*(1-d/td)^2+0.20*(1-dest/3)^1.5+0.18*direction^3+0.13*(1-time/30)^2+0.12*slack/(slack+2)+0.10*reliability), multiplied by route_shape_acceptance",
+    "label": "synthetic Bernoulli draw; original query.relevant_ids is not used",
+    "rng_stream": "heldout-labels:{seed}:{scenario}",
+    "source": "synthetic_heldout_non_linear_mobility_preferences"
+  },
+  "methods": [
+    "seeded_random",
+    "nearest_neighbour",
+    "distance_destination",
+    "route_time"
+  ],
+  "original_label_type": "synthetic_original",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "privacy": "synthetic IDs and artificial coordinates only; no private environment variables",
+  "python": "3.13.2 (tags/v3.13.2:4f8bb39, Feb  4 2025, 15:23:48) [MSC v.1942 64 bit (AMD64)]",
+  "requests_per_scenario": 20,
+  "scenarios": {
+    "balanced": 12,
+    "dense": 24,
+    "thin": 4
+  },
+  "seeds": [
+    101,
+    202,
+    303
+  ],
+  "synthetic_dataset_sha256": "438c63d7a37bb9d86feb7887933a10a0207ead3d6119668bc26fe8f1bd4ca265",
+  "timing_note": "quality is deterministic; timing is machine-dependent"
+}

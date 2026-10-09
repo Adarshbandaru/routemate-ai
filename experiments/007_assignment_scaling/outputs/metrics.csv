@@ -1,0 +1,6 @@
+scale_name,num_riders,num_drivers,mean_feasible_edges,edge_density_pct,greedy_obj,greedy_gap_pct,greedy_ms,auction_obj,auction_gap_pct,auction_ms,optimal_obj,optimal_ms,optimal_nodes_explored
+micro_5x3,5,3,4.3,28.9,127.82,0.0,0.008,127.82,0.0,0.034,127.82,0.103,4.0
+small_10x5,10,5,8.3,16.7,185.59,10.42,0.008,185.59,10.42,0.024,204.29,0.117,23.0
+medium_20x10,20,10,31.3,15.7,437.75,12.4,0.027,437.75,12.4,0.058,483.39,4.003,3607.0
+large_30x15,30,15,77.0,17.1,837.29,17.05,0.133,837.29,17.05,0.168,1004.44,4879.545,2908045.0
+stress_40x20,40,20,117.3,14.7,1118.85,6.65,0.098,1118.85,6.65,0.243,1189.37,5000.124,2893933.7

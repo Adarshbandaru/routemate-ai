@@ -1,0 +1,19 @@
+{
+  "experiment_id": "010_dynamic_congestion",
+  "created_at_utc": "2026-10-08T18:40:58.042213+00:00",
+  "study_area": "San Francisco Downtown / Financial District & SoMa Corridor",
+  "model": "Bureau of Public Roads (BPR) link performance function with directional diurnal volume-capacity curves",
+  "evidence_class": "Controlled semi-synthetic experiment on a realistic road-network graph",
+  "artifacts": [
+    "outputs/results.json",
+    "outputs/metrics.csv",
+    "outputs/manifest.json"
+  ],
+  "summary": {
+    "pruning_percentage": 74.2,
+    "pruning_false_negatives": 0,
+    "pruning_speedup": 3.84,
+    "severe_congestion_top1_change": 0.167,
+    "moderate_congestion_eta_error_s": 55.5
+  }
+}

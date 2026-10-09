@@ -1,0 +1,10 @@
+demand_regime,policy,seed,total_reqs,completed,cancelled,fulfillment_rate_pct,cancellation_rate_pct,pooling_rate_pct,mean_wait_s,p50_wait_s,p95_wait_s,mean_journey_s,fleet_vkt_km,active_insertions,reassignments,mean_lat_ms,p95_lat_ms
+low,static_batch,42,24,21,2,87.5,8.3,0.0,178.9,166.7,264.3,317.7,62.17,0,0,0.83,6.09
+low,periodic_rolling,42,24,20,2,83.3,8.3,70.0,161.1,146.3,257.1,377.5,41.74,7,0,0.56,3.64
+low,event_driven_rolling,42,24,21,2,87.5,8.3,100.0,140.0,127.2,245.8,374.5,34.8,11,0,0.99,4.51
+balanced,static_batch,42,55,51,1,92.7,1.8,0.0,192.0,169.0,350.4,350.2,127.78,0,0,2.87,11.83
+balanced,periodic_rolling,42,55,50,1,90.9,1.8,100.0,168.3,172.6,301.6,369.8,53.34,34,0,2.1,11.71
+balanced,event_driven_rolling,42,55,51,2,92.7,3.6,100.0,123.5,102.6,251.3,331.7,50.45,36,0,0.99,4.18
+high,static_batch,42,114,101,5,88.6,4.4,0.0,208.3,199.4,392.4,373.6,259.07,0,0,5.98,12.68
+high,periodic_rolling,42,114,101,3,88.6,2.6,100.0,156.5,144.8,274.5,372.7,93.66,76,0,3.17,11.68
+high,event_driven_rolling,42,114,103,4,90.4,3.5,100.0,148.7,140.2,301.1,366.0,72.67,88,0,0.89,4.23

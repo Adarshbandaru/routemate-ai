@@ -1,0 +1,478 @@
+{
+  "metadata": {
+    "study_area": "San Francisco Downtown / Financial District & SoMa",
+    "driver_count": 10,
+    "rider_count": 25,
+    "total_candidate_pairs": 250,
+    "created_seed": 42
+  },
+  "drivers": [
+    {
+      "id": "DRV-01",
+      "start": {
+        "lat": 37.7825,
+        "lon": -122.4015
+      },
+      "destination": {
+        "lat": 37.7905,
+        "lon": -122.389
+      },
+      "departure_iso": "2026-10-08T08:30:00+00:00",
+      "capacity": 4,
+      "route_nodes_count": 6
+    },
+    {
+      "id": "DRV-02",
+      "start": {
+        "lat": 37.7858,
+        "lon": -122.4065
+      },
+      "destination": {
+        "lat": 37.7938,
+        "lon": -122.394
+      },
+      "departure_iso": "2026-10-08T08:35:00+00:00",
+      "capacity": 4,
+      "route_nodes_count": 6
+    },
+    {
+      "id": "DRV-03",
+      "start": {
+        "lat": 37.7845,
+        "lon": -122.404
+      },
+      "destination": {
+        "lat": 37.79,
+        "lon": -122.3955
+      },
+      "departure_iso": "2026-10-08T08:32:00+00:00",
+      "capacity": 3,
+      "route_nodes_count": 4
+    },
+    {
+      "id": "DRV-04",
+      "start": {
+        "lat": 37.7885,
+        "lon": -122.3865
+      },
+      "destination": {
+        "lat": 37.7805,
+        "lon": -122.399
+      },
+      "departure_iso": "2026-10-08T08:40:00+00:00",
+      "capacity": 4,
+      "route_nodes_count": 6
+    },
+    {
+      "id": "DRV-05",
+      "start": {
+        "lat": 37.7842,
+        "lon": -122.3932
+      },
+      "destination": {
+        "lat": 37.7895,
+        "lon": -122.401
+      },
+      "departure_iso": "2026-10-08T08:38:00+00:00",
+      "capacity": 3,
+      "route_nodes_count": 4
+    },
+    {
+      "id": "DRV-06",
+      "start": {
+        "lat": 37.7825,
+        "lon": -122.396
+      },
+      "destination": {
+        "lat": 37.788,
+        "lon": -122.4035
+      },
+      "departure_iso": "2026-10-08T08:42:00+00:00",
+      "capacity": 4,
+      "route_nodes_count": 4
+    },
+    {
+      "id": "DRV-07",
+      "start": {
+        "lat": 37.7912,
+        "lon": -122.398
+      },
+      "destination": {
+        "lat": 37.786,
+        "lon": -122.3905
+      },
+      "departure_iso": "2026-10-08T08:34:00+00:00",
+      "capacity": 3,
+      "route_nodes_count": 4
+    },
+    {
+      "id": "DRV-08",
+      "start": {
+        "lat": 37.7872,
+        "lon": -122.3885
+      },
+      "destination": {
+        "lat": 37.7925,
+        "lon": -122.396
+      },
+      "departure_iso": "2026-10-08T08:45:00+00:00",
+      "capacity": 3,
+      "route_nodes_count": 4
+    },
+    {
+      "id": "DRV-09",
+      "start": {
+        "lat": 37.7938,
+        "lon": -122.394
+      },
+      "destination": {
+        "lat": 37.7885,
+        "lon": -122.3865
+      },
+      "departure_iso": "2026-10-08T08:36:00+00:00",
+      "capacity": 4,
+      "route_nodes_count": 4
+    },
+    {
+      "id": "DRV-10",
+      "start": {
+        "lat": 37.7895,
+        "lon": -122.401
+      },
+      "destination": {
+        "lat": 37.7925,
+        "lon": -122.3915
+      },
+      "departure_iso": "2026-10-08T08:44:00+00:00",
+      "capacity": 4,
+      "route_nodes_count": 5
+    }
+  ],
+  "riders": [
+    {
+      "id": "RID-01",
+      "start": {
+        "lat": 37.7845,
+        "lon": -122.3985
+      },
+      "destination": {
+        "lat": 37.788,
+        "lon": -122.393
+      },
+      "departure_iso": "2026-10-08T08:31:00+00:00",
+      "seats_requested": 1
+    },
+    {
+      "id": "RID-02",
+      "start": {
+        "lat": 37.7825,
+        "lon": -122.4015
+      },
+      "destination": {
+        "lat": 37.7862,
+        "lon": -122.3958
+      },
+      "departure_iso": "2026-10-08T08:30:00+00:00",
+      "seats_requested": 1
+    },
+    {
+      "id": "RID-03",
+      "start": {
+        "lat": 37.7862,
+        "lon": -122.3958
+      },
+      "destination": {
+        "lat": 37.7905,
+        "lon": -122.389
+      },
+      "departure_iso": "2026-10-08T08:33:00+00:00",
+      "seats_requested": 2
+    },
+    {
+      "id": "RID-04",
+      "start": {
+        "lat": 37.7845,
+        "lon": -122.3985
+      },
+      "destination": {
+        "lat": 37.7892,
+        "lon": -122.391
+      },
+      "departure_iso": "2026-10-08T08:32:00+00:00",
+      "seats_requested": 1
+    },
+    {
+      "id": "RID-05",
+      "start": {
+        "lat": 37.7858,
+        "lon": -122.4065
+      },
+      "destination": {
+        "lat": 37.7895,
+        "lon": -122.401
+      },
+      "departure_iso": "2026-10-08T08:36:00+00:00",
+      "seats_requested": 1
+    },
+    {
+      "id": "RID-06",
+      "start": {
+        "lat": 37.788,
+        "lon": -122.4035
+      },
+      "destination": {
+        "lat": 37.7938,
+        "lon": -122.394
+      },
+      "departure_iso": "2026-10-08T08:34:00+00:00",
+      "seats_requested": 1
+    },
+    {
+      "id": "RID-07",
+      "start": {
+        "lat": 37.7895,
+        "lon": -122.401
+      },
+      "destination": {
+        "lat": 37.7925,
+        "lon": -122.396
+      },
+      "departure_iso": "2026-10-08T08:37:00+00:00",
+      "seats_requested": 2
+    },
+    {
+      "id": "RID-08",
+      "start": {
+        "lat": 37.7845,
+        "lon": -122.404
+      },
+      "destination": {
+        "lat": 37.7882,
+        "lon": -122.3982
+      },
+      "departure_iso": "2026-10-08T08:33:00+00:00",
+      "seats_requested": 1
+    },
+    {
+      "id": "RID-09",
+      "start": {
+        "lat": 37.7865,
+        "lon": -122.401
+      },
+      "destination": {
+        "lat": 37.79,
+        "lon": -122.3955
+      },
+      "departure_iso": "2026-10-08T08:35:00+00:00",
+      "seats_requested": 1
+    },
+    {
+      "id": "RID-10",
+      "start": {
+        "lat": 37.7882,
+        "lon": -122.3982
+      },
+      "destination": {
+        "lat": 37.7925,
+        "lon": -122.3915
+      },
+      "departure_iso": "2026-10-08T08:42:00+00:00",
+      "seats_requested": 1
+    },
+    {
+      "id": "RID-11",
+      "start": {
+        "lat": 37.7885,
+        "lon": -122.3865
+      },
+      "destination": {
+        "lat": 37.786,
+        "lon": -122.3905
+      },
+      "departure_iso": "2026-10-08T08:41:00+00:00",
+      "seats_requested": 1
+    },
+    {
+      "id": "RID-12",
+      "start": {
+        "lat": 37.7872,
+        "lon": -122.3885
+      },
+      "destination": {
+        "lat": 37.7825,
+        "lon": -122.396
+      },
+      "departure_iso": "2026-10-08T08:39:00+00:00",
+      "seats_requested": 2
+    },
+    {
+      "id": "RID-13",
+      "start": {
+        "lat": 37.786,
+        "lon": -122.3905
+      },
+      "destination": {
+        "lat": 37.7805,
+        "lon": -122.399
+      },
+      "departure_iso": "2026-10-08T08:40:00+00:00",
+      "seats_requested": 1
+    },
+    {
+      "id": "RID-14",
+      "start": {
+        "lat": 37.788,
+        "lon": -122.393
+      },
+      "destination": {
+        "lat": 37.7845,
+        "lon": -122.3985
+      },
+      "departure_iso": "2026-10-08T08:32:00+00:00",
+      "seats_requested": 1
+    },
+    {
+      "id": "RID-15",
+      "start": {
+        "lat": 37.7905,
+        "lon": -122.389
+      },
+      "destination": {
+        "lat": 37.7892,
+        "lon": -122.391
+      },
+      "departure_iso": "2026-10-08T08:31:00+00:00",
+      "seats_requested": 1
+    },
+    {
+      "id": "RID-16",
+      "start": {
+        "lat": 37.788,
+        "lon": -122.4035
+      },
+      "destination": {
+        "lat": 37.7825,
+        "lon": -122.396
+      },
+      "departure_iso": "2026-10-08T08:42:00+00:00",
+      "seats_requested": 1
+    },
+    {
+      "id": "RID-17",
+      "start": {
+        "lat": 37.7842,
+        "lon": -122.3932
+      },
+      "destination": {
+        "lat": 37.7895,
+        "lon": -122.401
+      },
+      "departure_iso": "2026-10-08T08:38:00+00:00",
+      "seats_requested": 1
+    },
+    {
+      "id": "RID-18",
+      "start": {
+        "lat": 37.7862,
+        "lon": -122.3958
+      },
+      "destination": {
+        "lat": 37.7895,
+        "lon": -122.401
+      },
+      "departure_iso": "2026-10-08T08:39:00+00:00",
+      "seats_requested": 1
+    },
+    {
+      "id": "RID-19",
+      "start": {
+        "lat": 37.7912,
+        "lon": -122.398
+      },
+      "destination": {
+        "lat": 37.786,
+        "lon": -122.3905
+      },
+      "departure_iso": "2026-10-08T08:34:00+00:00",
+      "seats_requested": 1
+    },
+    {
+      "id": "RID-20",
+      "start": {
+        "lat": 37.7872,
+        "lon": -122.3885
+      },
+      "destination": {
+        "lat": 37.7925,
+        "lon": -122.396
+      },
+      "departure_iso": "2026-10-08T08:46:00+00:00",
+      "seats_requested": 2
+    },
+    {
+      "id": "RID-21",
+      "start": {
+        "lat": 37.783,
+        "lon": -122.403
+      },
+      "destination": {
+        "lat": 37.7832,
+        "lon": -122.4035
+      },
+      "departure_iso": "2026-10-08T08:30:00+00:00",
+      "seats_requested": 1
+    },
+    {
+      "id": "RID-22",
+      "start": {
+        "lat": 37.783,
+        "lon": -122.403
+      },
+      "destination": {
+        "lat": 37.7858,
+        "lon": -122.4065
+      },
+      "departure_iso": "2026-10-08T08:35:00+00:00",
+      "seats_requested": 1
+    },
+    {
+      "id": "RID-23",
+      "start": {
+        "lat": 37.7858,
+        "lon": -122.4065
+      },
+      "destination": {
+        "lat": 37.7832,
+        "lon": -122.4035
+      },
+      "departure_iso": "2026-10-08T08:38:00+00:00",
+      "seats_requested": 1
+    },
+    {
+      "id": "RID-24",
+      "start": {
+        "lat": 37.7805,
+        "lon": -122.399
+      },
+      "destination": {
+        "lat": 37.7938,
+        "lon": -122.394
+      },
+      "departure_iso": "2026-10-08T08:40:00+00:00",
+      "seats_requested": 1
+    },
+    {
+      "id": "RID-25",
+      "start": {
+        "lat": 37.7858,
+        "lon": -122.4065
+      },
+      "destination": {
+        "lat": 37.7885,
+        "lon": -122.3865
+      },
+      "departure_iso": "2026-10-08T08:36:00+00:00",
+      "seats_requested": 1
+    }
+  ]
+}

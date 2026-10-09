@@ -1,0 +1,46 @@
+{
+  "code_sha256": {
+    "src/routemate/candidates.py": "be4ab18bffeae9fe82647b1e648fa89cdf770f50d2beaa83bbac3adcdd7cd9e3",
+    "src/routemate/experiment.py": "5685f3d362bd3c5a90ada32b30d1d348c1c70f0f4265f0aaa5aced5ab9761119",
+    "src/routemate/heldout.py": "530c2640ee3a1b5f40db741ce0f2c8ce56cef891de2c18ea9c87f65feed581a1",
+    "src/routemate/ml.py": "d9b95a25475542a83a43ca114c978455891d2267cf00b66afa730706c4a95c19",
+    "src/routemate/synthetic.py": "ba10a82cacfabb96af7e5bc717c755f5f4ca5ebee00e42b558e4bcf8220a6168"
+  },
+  "dataset_version": "latent-corridor-v1",
+  "experiment_version": "classical-ml-ranking-v1",
+  "fallback": null,
+  "features": [
+    "pickup_distance_km",
+    "destination_distance_km",
+    "route_similarity",
+    "direction_similarity",
+    "detour_km",
+    "departure_difference_min",
+    "capacity_slack"
+  ],
+  "hyperparameters": {
+    "epochs": 500,
+    "l2": 1.0,
+    "learning_rate": 0.15
+  },
+  "k": 3,
+  "model_artifact": "model.json",
+  "model_artifact_version": "routemate-logistic-artifact-v1",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "privacy": "synthetic data only; no private environment variables",
+  "python": "3.13.2 (tags/v3.13.2:4f8bb39, Feb  4 2025, 15:23:48) [MSC v.1942 64 bit (AMD64)]",
+  "requests_per_scenario": 20,
+  "scenarios": [
+    "thin",
+    "balanced",
+    "dense"
+  ],
+  "synthetic_dataset_sha256": "cddd70580bb2beb60e6d3acf183df266de3a7716be9ced81afbe5b5dcf141c82",
+  "test_pair_count": 402,
+  "test_seed": 303,
+  "train_pair_count": 804,
+  "train_seeds": [
+    101,
+    202
+  ]
+}

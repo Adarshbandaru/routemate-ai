@@ -1,0 +1,45 @@
+{
+  "experiment": "007_assignment_scaling",
+  "description": "Multi-Rider Assignment Optimality and Scaling Benchmark",
+  "timestamp_utc": "greedy",
+  "platform": {
+    "python": "3.14.5",
+    "os": "Windows",
+    "machine": "AMD64"
+  },
+  "seeds": [
+    42,
+    101,
+    202
+  ],
+  "scale_configs": [
+    [
+      "micro_5x3",
+      5,
+      3
+    ],
+    [
+      "small_10x5",
+      10,
+      5
+    ],
+    [
+      "medium_20x10",
+      20,
+      10
+    ],
+    [
+      "large_30x15",
+      30,
+      15
+    ],
+    [
+      "stress_40x20",
+      40,
+      20
+    ]
+  ],
+  "total_evaluations": 15,
+  "overall_greedy_mean_gap_pct": 9.3,
+  "overall_auction_mean_gap_pct": 9.3
+}

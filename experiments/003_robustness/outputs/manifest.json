@@ -1,0 +1,111 @@
+{
+  "code_sha256": {
+    "src/routemate/__init__.py": "228eaa3307148adebd117cd9c8e5cf88a948e2cd35ee4ea7efe049a325c4625c",
+    "src/routemate/ablation.py": "c42022cb1f307ba7afd9f469200e8dbcd3e7bd09228469df3749dbde7eaebe0d",
+    "src/routemate/baselines.py": "92eed71afcb9aae45879deb5759eaf349925d27ac29a07e245a12d02d872f468",
+    "src/routemate/candidates.py": "be4ab18bffeae9fe82647b1e648fa89cdf770f50d2beaa83bbac3adcdd7cd9e3",
+    "src/routemate/cli.py": "5bbbaa737a24dd1204d518aea3db839eb5558229d0b5590aa15eea9ccfb53f2c",
+    "src/routemate/experiment.py": "5685f3d362bd3c5a90ada32b30d1d348c1c70f0f4265f0aaa5aced5ab9761119",
+    "src/routemate/features.py": "47658b5efe8452158510209028d60d449d73adc5ac0a03d243429214a2bb2572",
+    "src/routemate/geometry.py": "4df39450f75329153b8c7bffa472a27548b6e977f89433f795ffc4bb4e3aebde",
+    "src/routemate/models.py": "cd783df1f0d85470813f42f1c3faef94903bad167f5afac4f8b179067de7fd02",
+    "src/routemate/perturbations.py": "8fa1fb94a42a00567e9b697633b71c1260e2a2c3db74fac7a80d7fca590ec23a",
+    "src/routemate/robustness.py": "ee711651b71ac0cd990a21c88f54eb559d0992e7a62f83722bbdfa1daa114385",
+    "src/routemate/sample.py": "7831f15d236f7e87c384768b759ea5786400de6db4c42c84f8594adecdc9fd72",
+    "src/routemate/scoring.py": "21628c9ad5dd7f866c64319646a1bb26f5d5592f152ef94cb9668060bf61794d",
+    "src/routemate/synthetic.py": "ba10a82cacfabb96af7e5bc717c755f5f4ca5ebee00e42b558e4bcf8220a6168"
+  },
+  "conditions": [
+    "control",
+    "endpoints_100m",
+    "route_100m",
+    "departure_5min",
+    "availability_25pct"
+  ],
+  "dataset_version": "latent-corridor-v1",
+  "environment": {
+    "platform": "Windows-11-10.0.26200-SP0",
+    "python": "3.13.2 (tags/v3.13.2:4f8bb39, Feb  4 2025, 15:23:48) [MSC v.1942 64 bit (AMD64)]"
+  },
+  "k": 3,
+  "label_model": {
+    "distance_tolerance_km": [
+      0.35,
+      2.5
+    ],
+    "forced_zero_relevant": "every tenth request (index modulo 10 equals 0)",
+    "formula": "p=0.05+0.90*exp(-0.5*((abs(start_y)+abs(end_y))/distance_tolerance+abs(minutes)/time_tolerance))",
+    "limitations": "Shared distance/time assumptions bias comparisons; labels are independent of core score but not feature concepts. No real acceptance evidence. Labels ignore verification/capacity so relevant-lost-to-filter remains visible.",
+    "reverse_probability_multiplier": 0.15,
+    "source": "synthetic_latent_preferences_not_observed_acceptance",
+    "time_tolerance_min": [
+      5.0,
+      35.0
+    ]
+  },
+  "labels_note": "Original labels are frozen sensitivity labels, not counterfactual acceptance.",
+  "original_dataset_sha256": "87c7ed7959421a194fdb8b9fe5915719ffdb10f2a9c83fe5d451e11fde73ef29",
+  "parameters": {
+    "availability_25pct": {
+      "allow_empty_pool": true,
+      "removal_probability": 0.25,
+      "retain_original_labels": true,
+      "rule": "keep each driver iff rng.random() >= 0.25"
+    },
+    "control": {
+      "operation": "return original query"
+    },
+    "departure_5min": {
+      "distribution": "independent rng.uniform(-5.0,5.0) minutes per provider",
+      "maximum_minutes": 5.0,
+      "minimum_minutes": -5.0
+    },
+    "disk": {
+      "conversion": "latitude+=degrees(radius*sin(angle)/earth_radius_km); longitude+=degrees(radius*cos(angle)/(earth_radius_km*cos(radians(original_latitude))))",
+      "distribution": "uniform area: radius=0.1*sqrt(rng.random()); angle=rng.uniform(0,2*pi)",
+      "earth_radius_km": 6371.0088,
+      "validation": "Coordinate and Journey validation; invalid local-domain results raise ValueError"
+    },
+    "endpoints_100m": {
+      "radius_km": 0.1,
+      "targets": "independent provider start and destination; synchronize route endpoints"
+    },
+    "order": "drivers in input order; start then destination; internal vertices in route order",
+    "preserved": [
+      "query_id",
+      "seed",
+      "scenario",
+      "rider",
+      "relevant_ids",
+      "latent",
+      "journey_id",
+      "vehicle",
+      "verification",
+      "seats_requested"
+    ],
+    "rng": "random.Random(f'{PERTURBATION_VERSION}:{query.query_id}:{condition}')",
+    "route_100m": {
+      "radius_km": 0.1,
+      "targets": "independent internal provider route vertices only"
+    },
+    "version": "provider-perturbations-v1"
+  },
+  "perturbation_version": "provider-perturbations-v1",
+  "perturbed_dataset_sha256": "472a9a7fa93da2a8c677307a49999fe4f2a45af05f80c1ab7e957807314cd781",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "provider": "full",
+  "python": "3.13.2 (tags/v3.13.2:4f8bb39, Feb  4 2025, 15:23:48) [MSC v.1942 64 bit (AMD64)]",
+  "requests_per_scenario": 20,
+  "robustness_version": "robustness-v1",
+  "scenarios": {
+    "balanced": 12,
+    "dense": 24,
+    "thin": 4
+  },
+  "seeds": [
+    11,
+    29,
+    47
+  ],
+  "utc_run_time": "2026-09-30T06:15:04.181102+00:00"
+}

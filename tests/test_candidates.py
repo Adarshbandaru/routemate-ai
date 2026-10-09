@@ -75,6 +75,14 @@ class CandidateTests(unittest.TestCase):
         self.assertEqual(decision.rejection_reasons, ())
         self.assertLess(decision.score, 50.0)
 
+    def test_pipeline_with_router(self):
+        from routemate.routing import DeterministicGeometricRouter
+        router = DeterministicGeometricRouter(nominal_speed_kmh=50.0)
+        res = run_candidate_pipeline(j("r"), [j("d", .01)], router=router)
+        self.assertEqual(res.retrieved_count, 1)
+        self.assertIn("detour_seconds", res.feature_rows[0].features)
+
 
 if __name__ == "__main__":
     unittest.main()
+

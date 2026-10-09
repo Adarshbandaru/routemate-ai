@@ -8,14 +8,22 @@ dist/
 build/
 .coverage
 htmlcov/
+node_modules/
+dashboard/dist/
+.DS_Store
+Thumbs.db
 
-# Local experiment outputs; keep schemas and manifests in version control.
+# Heavy synthetic raw dataset dumps (>1MB); keep lightweight results, manifests, and metrics in version control.
+experiments/*/outputs/*dataset.json
+experiments/*/outputs/feasibility_matrix.csv
+
+# Local experiment scratch artifacts
 data/raw/
 data/processed/
 artifacts/
-experiments/*/outputs/
 
 # Secrets and local configuration.
 .env
 .env.*
 !.env.example
+

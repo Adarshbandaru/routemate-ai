@@ -1,0 +1,24 @@
+{
+  "experiment_id": "014_research_synthesis",
+  "created_at_utc": "2026-10-09T06:43:29.638173+00:00",
+  "evidence_class": "Meta-analytical research synthesis across Experiments 001-013",
+  "artifacts": [
+    "outputs/results.json",
+    "outputs/metrics.csv",
+    "outputs/manifest.json",
+    "outputs/synthesis_table.csv"
+  ],
+  "summary": {
+    "total_experiments_synthesized": 13,
+    "pre_registered_hypotheses_supported": 3,
+    "pre_registered_hypotheses_partially_supported": 2,
+    "pre_registered_hypotheses_unsupported": 0,
+    "key_system_breakthroughs": [
+      "Two-tier admissible pruning cuts road network routing calls by 81.8% with 0 false negatives.",
+      "Network-aware Dijkstra routing eliminates 75.6% false-positive match rate incurred by Euclidean gating.",
+      "Multi-rider pooling C=2 increases rider matching by +70% relative to single-occupancy fleets.",
+      "Online recourse completely restores 100% trip feasibility under arterial road closures in <= 4.3 ms.",
+      "Event-driven rolling dispatch with active-trip insertions slashes fleet VKT by 60.5% and median wait time by 39.1%."
+    ]
+  }
+}

@@ -1,0 +1,57 @@
+{
+  "artifact_version": "routemate-logistic-artifact-v1",
+  "fallback": null,
+  "features": [
+    "pickup_distance_km",
+    "destination_distance_km",
+    "route_similarity",
+    "direction_similarity",
+    "detour_km",
+    "departure_difference_min",
+    "capacity_slack"
+  ],
+  "hyperparameters": {
+    "epochs": 500,
+    "l2": 1.0,
+    "learning_rate": 0.15
+  },
+  "intercept": -0.8939994715356908,
+  "means": [
+    0.6098721174411159,
+    0.742836650022221,
+    0.4896792013167458,
+    0.995692877765586,
+    1.5085422019820407,
+    12.468988918760365,
+    1.0
+  ],
+  "metadata": {
+    "evidence_class": "synthetic_only",
+    "test_seed": 303,
+    "train_seeds": [
+      101,
+      202
+    ]
+  },
+  "model_version": "classical-ml-ranking-v1",
+  "n_iter": 500,
+  "scales": [
+    0.3471703170216665,
+    0.42766999280643275,
+    0.3367943997715021,
+    0.00495081746235075,
+    0.6671803665658169,
+    7.236413964372488,
+    1.0
+  ],
+  "warning": "Synthetic-label artifact; not production calibrated and not a safety model.",
+  "weights": [
+    -0.12220232008000251,
+    -0.2721389194731652,
+    0.6969241918088105,
+    -0.6500478323736968,
+    -0.45246300726048777,
+    0.0695188559350961,
+    0.0
+  ]
+}

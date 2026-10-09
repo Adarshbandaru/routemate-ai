@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 950 500" width="100%" height="100%">
+  <rect width="950" height="500" fill="#ffffff"/>
+  <text x="475" y="35" font-family="system-ui, sans-serif" font-size="20" font-weight="bold" fill="#0f172a" text-anchor="middle">Dynamic Recourse: Trip Feasibility &amp; Objective Recovery Under Disruptions</text>
+  <text x="475" y="58" font-family="system-ui, sans-serif" font-size="12" fill="#64748b" text-anchor="middle">Controlled Link Closure &amp; Curbside Dwell Evaluation Across 6 Conditions (Experiment 012)</text>
+
+  <!-- Side-by-side grouped bars for the 6 scenarios -->
+  <!-- Left Axis: Objective Score (0 to 100) -->
+  <g transform="translate(100, 100)">
+    <line x1="0" y1="280" x2="780" y2="280" stroke="#94a3b8" stroke-width="1.5"/>
+    <line x1="0" y1="280" x2="0" y2="20" stroke="#94a3b8" stroke-width="1.5"/>
+    <text x="-10" y="285" font-family="system-ui, sans-serif" font-size="11" fill="#64748b" text-anchor="end">0</text>
+    <text x="-10" y="150" font-family="system-ui, sans-serif" font-size="11" fill="#64748b" text-anchor="end">50</text>
+    <text x="-10" y="25" font-family="system-ui, sans-serif" font-size="11" fill="#64748b" text-anchor="end">100</text>
+    <text x="-40" y="150" font-family="system-ui, sans-serif" font-size="13" font-weight="600" fill="#334155" text-anchor="middle" transform="rotate(-90 -40 150)">Executed Objective Score</text>
+
+    <!-- Grid lines -->
+    <line x1="0" y1="150" x2="780" y2="150" stroke="#e2e8f0" stroke-width="1" stroke-dasharray="4,4"/>
+    <line x1="0" y1="20" x2="780" y2="20" stroke="#e2e8f0" stroke-width="1" stroke-dasharray="4,4"/>
+
+    <!-- 1_static_nominal: Obj = 86.60, Feas = 100% -->
+    <!-- height = (86.6/100)*260 = 225.16 -> y = 280 - 225 = 55 -->
+    <rect x="30" y="55" width="80" height="225" rx="4" fill="#3b82f6"/>
+    <text x="70" y="45" font-family="system-ui, sans-serif" font-size="12" font-weight="bold" fill="#1d4ed8" text-anchor="middle">86.6</text>
+    <text x="70" y="298" font-family="system-ui, sans-serif" font-size="11" font-weight="bold" fill="#1e293b" text-anchor="middle">1. Nominal</text>
+    <text x="70" y="314" font-family="system-ui, sans-serif" font-size="10" fill="#059669" text-anchor="middle">100% Feas</text>
+
+    <!-- 2_static_dwell: Obj = 82.61, Feas = 100% -->
+    <!-- height = (82.61/100)*260 = 214.8 -> y = 280 - 215 = 65 -->
+    <rect x="160" y="65" width="80" height="215" rx="4" fill="#60a5fa"/>
+    <text x="200" y="55" font-family="system-ui, sans-serif" font-size="12" font-weight="bold" fill="#1d4ed8" text-anchor="middle">82.6</text>
+    <text x="200" y="298" font-family="system-ui, sans-serif" font-size="11" font-weight="bold" fill="#1e293b" text-anchor="middle">2. Dwell</text>
+    <text x="200" y="314" font-family="system-ui, sans-serif" font-size="10" fill="#059669" text-anchor="middle">100% Feas</text>
+
+    <!-- 3_static_incident: Obj = 52.23, Feas = 60% -->
+    <!-- height = (52.23/100)*260 = 135.8 -> y = 280 - 136 = 144 -->
+    <rect x="290" y="144" width="80" height="136" rx="4" fill="#f87171"/>
+    <text x="330" y="134" font-family="system-ui, sans-serif" font-size="12" font-weight="bold" fill="#dc2626" text-anchor="middle">52.2</text>
+    <text x="330" y="298" font-family="system-ui, sans-serif" font-size="11" font-weight="bold" fill="#1e293b" text-anchor="middle">3. Static Inc.</text>
+    <text x="330" y="314" font-family="system-ui, sans-serif" font-size="10" font-weight="bold" fill="#dc2626" text-anchor="middle">60% Feas (-40%)</text>
+
+    <!-- 5_recourse_incident: Obj = 84.61, Feas = 100% -->
+    <!-- height = (84.61/100)*260 = 220 -> y = 280 - 220 = 60 -->
+    <rect x="420" y="60" width="80" height="220" rx="4" fill="#10b981"/>
+    <text x="460" y="50" font-family="system-ui, sans-serif" font-size="12" font-weight="bold" fill="#047857" text-anchor="middle">84.6</text>
+    <text x="460" y="298" font-family="system-ui, sans-serif" font-size="11" font-weight="bold" fill="#1e293b" text-anchor="middle">5. Recourse Inc.</text>
+    <text x="460" y="314" font-family="system-ui, sans-serif" font-size="10" font-weight="bold" fill="#047857" text-anchor="middle">100% Feas (+40%)</text>
+
+    <!-- 4_static_dwell_incident: Obj = 49.80, Feas = 60% -->
+    <!-- height = (49.80/100)*260 = 129.5 -> y = 280 - 130 = 150 -->
+    <rect x="550" y="150" width="80" height="130" rx="4" fill="#fca5a5"/>
+    <text x="590" y="140" font-family="system-ui, sans-serif" font-size="12" font-weight="bold" fill="#dc2626" text-anchor="middle">49.8</text>
+    <text x="590" y="298" font-family="system-ui, sans-serif" font-size="11" font-weight="bold" fill="#1e293b" text-anchor="middle">4. Static Both</text>
+    <text x="590" y="314" font-family="system-ui, sans-serif" font-size="10" font-weight="bold" fill="#dc2626" text-anchor="middle">60% Feas (-40%)</text>
+
+    <!-- 6_recourse_dwell_incident: Obj = 80.24, Feas = 100% -->
+    <!-- height = (80.24/100)*260 = 208.6 -> y = 280 - 209 = 71 -->
+    <rect x="680" y="71" width="80" height="209" rx="4" fill="#059669"/>
+    <text x="720" y="61" font-family="system-ui, sans-serif" font-size="12" font-weight="bold" fill="#047857" text-anchor="middle">80.2</text>
+    <text x="720" y="298" font-family="system-ui, sans-serif" font-size="11" font-weight="bold" fill="#1e293b" text-anchor="middle">6. Recourse Both</text>
+    <text x="720" y="314" font-family="system-ui, sans-serif" font-size="10" font-weight="bold" fill="#047857" text-anchor="middle">100% Feas (+40%)</text>
+
+    <!-- Recovery Arrow from 3 -> 5 -->
+    <path d="M 330 130 Q 395 30 450 50" stroke="#047857" stroke-width="2.5" fill="none" stroke-dasharray="4,2"/>
+    <text x="395" y="40" font-family="system-ui, sans-serif" font-size="11" font-weight="bold" fill="#047857" text-anchor="middle">+76.7% Recovery</text>
+  </g>
+
+  <!-- Performance Badges at bottom -->
+  <rect x="140" y="440" width="670" height="45" rx="6" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text x="475" y="468" font-family="system-ui, sans-serif" font-size="12" font-weight="600" fill="#334155" text-anchor="middle">
+    Recourse Replanning Latency: <tspan fill="#047857" font-weight="bold">3.42 ms – 4.17 ms</tspan> | Regret vs Oracle: <tspan fill="#047857" font-weight="bold">1.06 – 5.42 points</tspan> (vs 35.8 static)
+  </text>
+</svg>

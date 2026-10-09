@@ -1,0 +1,25 @@
+\begin{table*}[t]
+\centering
+\small
+\caption{Cross-Experiment Synthesis Matrix across Experiments 001--013.}
+\label{tab:synthesis_matrix}
+\begin{tabularx}{\textwidth}{l p{3.2cm} p{3.0cm} p{3.5cm} p{3.5cm} l}
+\toprule
+\textbf{ID} & \textbf{Title} & \textbf{Scope} & \textbf{Methodology} & \textbf{Key Outcome} & \textbf{Hypotheses} \\
+\midrule
+\textbf{001} & Baseline Matching \& Filtering Comparisons & 1-to-1 synthetic corridor queries & Unranked baseline; Spatial-only filtering & Spatial-only indexing retrieves proximate candidates but suffers high false-positive rates. & H1\_rules\_improve\_precision \\
+\textbf{002} & Leave-One-Rule-Out Feasibility Ablation & 1-to-N journey retrieval with single-rule removals & Full feasibility matrix; Direction-ablated & Directional bearing alignment is the single most critical filter preventing opposite-direction pairings. & H\_ablation\_quantifies\_rule\_necessity \\
+\textbf{003} & Correlated Spatial and Temporal Noise Robustness & Spatial jitter (100m) and departure delta (5min) & Control baseline; Endpoint jitter & Spatial noise $\le$ 100m causes negligible ranking degradation (< 1.5% NDCG shift). & H\_graceful\_spatial\_degradation \\
+\textbf{004} & Cross-Corridor Held-Out Generalization & Thin vs balanced vs dense corridor distributions & Seeded random; Nearest neighbor & Heuristic ranking generalizes stably across densities without parameter overfitting. & H\_heuristic\_generalization \\
+\textbf{005} & Supervised Ranking via Classical Machine Learning & Feature engineering and logistic regression ranking & Rule heuristic; Logistic regression ranker & Supervised logistic regression achieves high ranking fidelity (0.797 NDCG@3). & H\_supervised\_feature\_utility \\
+\textbf{006} & Empirical Street-Level Circuity Factor Benchmark & 4x4 urban grid (30 OD pairs) & Euclidean straight-line; Directed grid Dijkstra routing & Street network distance is on average 34.1% longer than Euclidean distance. & H\_circuity\_divergence \\
+\textbf{007} & Multi-Rider Batch Assignment Optimality \& Scaling & 5x3 to 40x20 matching cohorts & Greedy Priority Assignment; Auction-Swap Local Search & Greedy assignment executes in < 1 ms while maintaining a 10–17% optimality gap relative to exact branch-and-bound. & H3\_heuristic\_efficiency\_frontier \\
+\textbf{008} & Realistic Road-Network Matching Validation & Downtown SF network (26 nodes, 53 edges, 45 candidate pairs) & Euclidean gating; Network-aware Dijkstra routing & 75.6% (34/45) of geometric candidate pairs are road-network false positives that fail true turn-constrained routing. & H\_euclidean\_gating\_flawed \\
+\textbf{009} & Hybrid Two-Tier Candidate Pruning \& Admissible Bounds & Two-tier geometric bounding before Dijkstra search & No pruning; Fixed Euclidean & Admissible lower-bound pruning eliminates 81.8% of expensive road-network evaluations with 0 false negatives. & H\_admissible\_pruning\_zero\_loss \\
+\textbf{010} & Dynamic Congestion Curves \& Peak-Hour Robustness & Free-flow vs mild vs moderate vs severe congestion across departure offsets & Time-dependent BPR router; Static free-flow routing & Severe congestion inflates travel times by 3.8x and slashes feasible candidate pairs by 70.6% (17 down to 5). & H2\_congestion\_reduces\_feasibility \\
+\textbf{011} & Multi-Rider Capacity Pooling under Dynamic Congestion & Vehicle capacities C=1..4 under dynamic BPR traffic & Greedy Insertion; Exact Permutation Tour Solver & Expanding vehicle capacity from C=1 to C=2 boosts rider matching from 40.0% to 68.0% (+70% relative gain). & H1\_multi\_rider\_pooling\_gain \\
+\textbf{012} & Dynamic Curbside Dwell, Incidents \& Online Recourse & 6 operating conditions across mild/moderate/severe disruptions and 3 seeds & Static Unadapted Execution; Online Graph Recourse Router & Arterial link closures reduce static plan feasibility to 50–60% due to impassable closures. & H\_recourse\_restores\_feasibility \\
+\textbf{013} & Fleet-Wide Rolling-Horizon Dispatch Simulation & Low, Balanced, and High demand regimes across 3 dispatch policies & Static Batch (60s); Periodic Rolling (30s) & Event-driven rolling dispatch with active-trip insertions cuts fleet mileage by 60.5% in balanced demand and 72.0% in high demand. & H\_event\_driven\_dispatch\_superiority \\
+\bottomrule
+\end{tabularx}
+\end{table*}

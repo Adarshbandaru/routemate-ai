@@ -1,0 +1,34 @@
+{
+  "experiment_id": "008_road_network_validation",
+  "created_at_utc": "2026-10-08T17:09:08.343844+00:00",
+  "study_area": "San Francisco Downtown / Financial District & SoMa Corridor",
+  "bounding_box": {
+    "min_latitude": 37.7805,
+    "max_latitude": 37.7938,
+    "min_longitude": -122.4065,
+    "max_longitude": -122.3865
+  },
+  "data_sources": [
+    {
+      "name": "OpenStreetMap Bounded Extract",
+      "license": "ODbL 1.0 (Open Database License)",
+      "attribution": "OpenStreetMap contributors",
+      "scope": "Downtown San Francisco Financial District & SoMa (Market, Mission, Howard, Folsom, 4th, 3rd, 2nd, 1st, Fremont, Beale)"
+    }
+  ],
+  "evidence_class": "Controlled semi-synthetic experiment on a realistic road-network graph",
+  "artifacts": [
+    "outputs/results.json",
+    "outputs/metrics.csv",
+    "outputs/manifest.json",
+    "data/osm_sf_downtown.json",
+    "data/trips.json"
+  ],
+  "summary": {
+    "total_pairs": 250,
+    "disagreement_rate": 0.14,
+    "rank_inversion_rate": 0.12,
+    "mean_top3_jaccard": 0.377,
+    "latency_slowdown_factor": 21.5
+  }
+}

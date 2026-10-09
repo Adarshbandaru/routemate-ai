@@ -1,0 +1,534 @@
+{
+  "nodes": {
+    "market_4th": {
+      "latitude": 37.7858,
+      "longitude": -122.4065
+    },
+    "market_3rd": {
+      "latitude": 37.788,
+      "longitude": -122.4035
+    },
+    "market_2nd": {
+      "latitude": 37.7895,
+      "longitude": -122.401
+    },
+    "market_1st": {
+      "latitude": 37.7912,
+      "longitude": -122.398
+    },
+    "market_fremont": {
+      "latitude": 37.7925,
+      "longitude": -122.396
+    },
+    "market_beale": {
+      "latitude": 37.7938,
+      "longitude": -122.394
+    },
+    "mission_4th": {
+      "latitude": 37.7845,
+      "longitude": -122.404
+    },
+    "mission_3rd": {
+      "latitude": 37.7865,
+      "longitude": -122.401
+    },
+    "mission_2nd": {
+      "latitude": 37.7882,
+      "longitude": -122.3982
+    },
+    "mission_1st": {
+      "latitude": 37.79,
+      "longitude": -122.3955
+    },
+    "mission_fremont": {
+      "latitude": 37.7912,
+      "longitude": -122.3935
+    },
+    "mission_beale": {
+      "latitude": 37.7925,
+      "longitude": -122.3915
+    },
+    "howard_4th": {
+      "latitude": 37.7825,
+      "longitude": -122.4015
+    },
+    "howard_3rd": {
+      "latitude": 37.7845,
+      "longitude": -122.3985
+    },
+    "howard_2nd": {
+      "latitude": 37.7862,
+      "longitude": -122.3958
+    },
+    "howard_1st": {
+      "latitude": 37.788,
+      "longitude": -122.393
+    },
+    "howard_fremont": {
+      "latitude": 37.7892,
+      "longitude": -122.391
+    },
+    "howard_beale": {
+      "latitude": 37.7905,
+      "longitude": -122.389
+    },
+    "folsom_4th": {
+      "latitude": 37.7805,
+      "longitude": -122.399
+    },
+    "folsom_3rd": {
+      "latitude": 37.7825,
+      "longitude": -122.396
+    },
+    "folsom_2nd": {
+      "latitude": 37.7842,
+      "longitude": -122.3932
+    },
+    "folsom_1st": {
+      "latitude": 37.786,
+      "longitude": -122.3905
+    },
+    "folsom_fremont": {
+      "latitude": 37.7872,
+      "longitude": -122.3885
+    },
+    "folsom_beale": {
+      "latitude": 37.7885,
+      "longitude": -122.3865
+    },
+    "dock_spur_1": {
+      "latitude": 37.783,
+      "longitude": -122.403
+    },
+    "dock_spur_2": {
+      "latitude": 37.7832,
+      "longitude": -122.4035
+    }
+  },
+  "edges": [
+    {
+      "u": "market_4th",
+      "v": "market_3rd",
+      "distance_km": 0.35964514073746423,
+      "duration_seconds": 32.36806266637178,
+      "speed_kmh": 40.0,
+      "name": "Market St"
+    },
+    {
+      "u": "market_3rd",
+      "v": "market_4th",
+      "distance_km": 0.35964514073746423,
+      "duration_seconds": 32.36806266637178,
+      "speed_kmh": 40.0,
+      "name": "Market St"
+    },
+    {
+      "u": "market_3rd",
+      "v": "market_2nd",
+      "distance_km": 0.27582980120928247,
+      "duration_seconds": 24.82468210883542,
+      "speed_kmh": 40.0,
+      "name": "Market St"
+    },
+    {
+      "u": "market_2nd",
+      "v": "market_3rd",
+      "distance_km": 0.27582980120928247,
+      "duration_seconds": 24.82468210883542,
+      "speed_kmh": 40.0,
+      "name": "Market St"
+    },
+    {
+      "u": "market_2nd",
+      "v": "market_1st",
+      "distance_km": 0.32438813703773967,
+      "duration_seconds": 29.19493233339657,
+      "speed_kmh": 40.0,
+      "name": "Market St"
+    },
+    {
+      "u": "market_2nd",
+      "v": "mission_2nd",
+      "distance_km": 0.2853696043348051,
+      "duration_seconds": 29.352302160151382,
+      "speed_kmh": 35.0,
+      "name": "2nd St"
+    },
+    {
+      "u": "market_1st",
+      "v": "market_2nd",
+      "distance_km": 0.32438813703773967,
+      "duration_seconds": 29.19493233339657,
+      "speed_kmh": 40.0,
+      "name": "Market St"
+    },
+    {
+      "u": "market_1st",
+      "v": "market_fremont",
+      "distance_km": 0.2275544452894356,
+      "duration_seconds": 20.479900076049205,
+      "speed_kmh": 40.0,
+      "name": "Market St"
+    },
+    {
+      "u": "market_1st",
+      "v": "mission_1st",
+      "distance_km": 0.2570302366032373,
+      "duration_seconds": 26.43739576490441,
+      "speed_kmh": 35.0,
+      "name": "1st St Southbound"
+    },
+    {
+      "u": "market_fremont",
+      "v": "market_1st",
+      "distance_km": 0.2275544452894356,
+      "duration_seconds": 20.479900076049205,
+      "speed_kmh": 40.0,
+      "name": "Market St"
+    },
+    {
+      "u": "market_fremont",
+      "v": "market_beale",
+      "distance_km": 0.22755205722280608,
+      "duration_seconds": 20.479685150052546,
+      "speed_kmh": 40.0,
+      "name": "Market St"
+    },
+    {
+      "u": "market_beale",
+      "v": "market_fremont",
+      "distance_km": 0.22755205722280608,
+      "duration_seconds": 20.479685150052546,
+      "speed_kmh": 40.0,
+      "name": "Market St"
+    },
+    {
+      "u": "market_beale",
+      "v": "mission_beale",
+      "distance_km": 0.2629682452310224,
+      "duration_seconds": 27.048162366619447,
+      "speed_kmh": 35.0,
+      "name": "Beale St Southbound"
+    },
+    {
+      "u": "mission_4th",
+      "v": "mission_3rd",
+      "distance_km": 0.3449075383962431,
+      "duration_seconds": 35.47620394932786,
+      "speed_kmh": 35.0,
+      "name": "Mission St"
+    },
+    {
+      "u": "mission_4th",
+      "v": "market_4th",
+      "distance_km": 0.26298811365559466,
+      "duration_seconds": 27.05020597600402,
+      "speed_kmh": 35.0,
+      "name": "4th St Northbound"
+    },
+    {
+      "u": "mission_3rd",
+      "v": "mission_4th",
+      "distance_km": 0.3449075383962431,
+      "duration_seconds": 35.47620394932786,
+      "speed_kmh": 35.0,
+      "name": "Mission St"
+    },
+    {
+      "u": "mission_3rd",
+      "v": "mission_2nd",
+      "distance_km": 0.3102829094783237,
+      "duration_seconds": 31.91481354634187,
+      "speed_kmh": 35.0,
+      "name": "Mission St"
+    },
+    {
+      "u": "mission_3rd",
+      "v": "market_3rd",
+      "distance_km": 0.2758333529064118,
+      "duration_seconds": 28.371430584659503,
+      "speed_kmh": 35.0,
+      "name": "3rd St Northbound"
+    },
+    {
+      "u": "mission_2nd",
+      "v": "mission_3rd",
+      "distance_km": 0.3102829094783237,
+      "duration_seconds": 31.91481354634187,
+      "speed_kmh": 35.0,
+      "name": "Mission St"
+    },
+    {
+      "u": "mission_2nd",
+      "v": "mission_1st",
+      "distance_km": 0.31040794975814473,
+      "duration_seconds": 31.927674832266312,
+      "speed_kmh": 35.0,
+      "name": "Mission St"
+    },
+    {
+      "u": "mission_2nd",
+      "v": "howard_2nd",
+      "distance_km": 0.30649271772334313,
+      "duration_seconds": 31.52496525154387,
+      "speed_kmh": 35.0,
+      "name": "2nd St"
+    },
+    {
+      "u": "mission_2nd",
+      "v": "market_2nd",
+      "distance_km": 0.2853696043348051,
+      "duration_seconds": 29.352302160151382,
+      "speed_kmh": 35.0,
+      "name": "2nd St"
+    },
+    {
+      "u": "mission_1st",
+      "v": "mission_2nd",
+      "distance_km": 0.31040794975814473,
+      "duration_seconds": 31.927674832266312,
+      "speed_kmh": 35.0,
+      "name": "Mission St"
+    },
+    {
+      "u": "mission_1st",
+      "v": "mission_fremont",
+      "distance_km": 0.22066033652834713,
+      "duration_seconds": 22.696491757201418,
+      "speed_kmh": 35.0,
+      "name": "Mission St"
+    },
+    {
+      "u": "mission_1st",
+      "v": "howard_1st",
+      "distance_km": 0.3126009563949074,
+      "duration_seconds": 32.15324122919048,
+      "speed_kmh": 35.0,
+      "name": "1st St Southbound"
+    },
+    {
+      "u": "mission_fremont",
+      "v": "mission_1st",
+      "distance_km": 0.22066033652834713,
+      "duration_seconds": 22.696491757201418,
+      "speed_kmh": 35.0,
+      "name": "Mission St"
+    },
+    {
+      "u": "mission_fremont",
+      "v": "mission_beale",
+      "distance_km": 0.22755444529040003,
+      "duration_seconds": 23.405600087012576,
+      "speed_kmh": 35.0,
+      "name": "Mission St"
+    },
+    {
+      "u": "mission_fremont",
+      "v": "market_fremont",
+      "distance_km": 0.2629714740479804,
+      "duration_seconds": 27.048494473506555,
+      "speed_kmh": 35.0,
+      "name": "Fremont St Northbound"
+    },
+    {
+      "u": "mission_beale",
+      "v": "mission_fremont",
+      "distance_km": 0.22755444529040003,
+      "duration_seconds": 23.405600087012576,
+      "speed_kmh": 35.0,
+      "name": "Mission St"
+    },
+    {
+      "u": "mission_beale",
+      "v": "howard_beale",
+      "distance_km": 0.31259573302421356,
+      "duration_seconds": 32.152703968204825,
+      "speed_kmh": 35.0,
+      "name": "Beale St Southbound"
+    },
+    {
+      "u": "howard_4th",
+      "v": "howard_3rd",
+      "distance_km": 0.3449129917226144,
+      "duration_seconds": 31.0421692550353,
+      "speed_kmh": 40.0,
+      "name": "Howard St Eastbound"
+    },
+    {
+      "u": "howard_4th",
+      "v": "mission_4th",
+      "distance_km": 0.312612447089962,
+      "duration_seconds": 32.15442312925323,
+      "speed_kmh": 35.0,
+      "name": "4th St Northbound"
+    },
+    {
+      "u": "howard_3rd",
+      "v": "howard_2nd",
+      "distance_km": 0.3033665894895222,
+      "duration_seconds": 27.302993054056998,
+      "speed_kmh": 40.0,
+      "name": "Howard St Eastbound"
+    },
+    {
+      "u": "howard_3rd",
+      "v": "mission_3rd",
+      "distance_km": 0.31260826876911096,
+      "duration_seconds": 32.153993359108554,
+      "speed_kmh": 35.0,
+      "name": "3rd St Northbound"
+    },
+    {
+      "u": "howard_2nd",
+      "v": "howard_1st",
+      "distance_km": 0.3171804133236146,
+      "duration_seconds": 28.546237199125315,
+      "speed_kmh": 40.0,
+      "name": "Howard St Eastbound"
+    },
+    {
+      "u": "howard_2nd",
+      "v": "folsom_2nd",
+      "distance_km": 0.3188462069868759,
+      "duration_seconds": 32.79560986150723,
+      "speed_kmh": 35.0,
+      "name": "2nd St"
+    },
+    {
+      "u": "howard_2nd",
+      "v": "mission_2nd",
+      "distance_km": 0.30649271772334313,
+      "duration_seconds": 31.52496525154387,
+      "speed_kmh": 35.0,
+      "name": "2nd St"
+    },
+    {
+      "u": "howard_1st",
+      "v": "howard_fremont",
+      "distance_km": 0.22066412511219197,
+      "duration_seconds": 19.859771260097276,
+      "speed_kmh": 40.0,
+      "name": "Howard St Eastbound"
+    },
+    {
+      "u": "howard_1st",
+      "v": "folsom_1st",
+      "distance_km": 0.31260513494332093,
+      "duration_seconds": 32.153671022741584,
+      "speed_kmh": 35.0,
+      "name": "1st St Southbound"
+    },
+    {
+      "u": "howard_fremont",
+      "v": "howard_beale",
+      "distance_km": 0.22755811913687035,
+      "duration_seconds": 20.480230722318332,
+      "speed_kmh": 40.0,
+      "name": "Howard St Eastbound"
+    },
+    {
+      "u": "howard_fremont",
+      "v": "mission_fremont",
+      "distance_km": 0.3125984492027352,
+      "duration_seconds": 32.152983346567055,
+      "speed_kmh": 35.0,
+      "name": "Fremont St Northbound"
+    },
+    {
+      "u": "howard_beale",
+      "v": "folsom_beale",
+      "distance_km": 0.312599911737228,
+      "duration_seconds": 32.1531337786863,
+      "speed_kmh": 35.0,
+      "name": "Beale St Southbound"
+    },
+    {
+      "u": "folsom_4th",
+      "v": "howard_4th",
+      "distance_km": 0.31261662527788125,
+      "duration_seconds": 32.15485288572493,
+      "speed_kmh": 35.0,
+      "name": "4th St Northbound"
+    },
+    {
+      "u": "folsom_3rd",
+      "v": "folsom_4th",
+      "distance_km": 0.3449184448629605,
+      "duration_seconds": 31.042660037666447,
+      "speed_kmh": 40.0,
+      "name": "Folsom St Westbound"
+    },
+    {
+      "u": "folsom_3rd",
+      "v": "howard_3rd",
+      "distance_km": 0.312612447089962,
+      "duration_seconds": 32.15442312925323,
+      "speed_kmh": 35.0,
+      "name": "3rd St Northbound"
+    },
+    {
+      "u": "folsom_2nd",
+      "v": "folsom_3rd",
+      "distance_km": 0.31029347057933293,
+      "duration_seconds": 27.926412352139963,
+      "speed_kmh": 40.0,
+      "name": "Folsom St Westbound"
+    },
+    {
+      "u": "folsom_2nd",
+      "v": "howard_2nd",
+      "distance_km": 0.3188462069868759,
+      "duration_seconds": 32.79560986150723,
+      "speed_kmh": 35.0,
+      "name": "2nd St"
+    },
+    {
+      "u": "folsom_1st",
+      "v": "folsom_2nd",
+      "distance_km": 0.3104177661744503,
+      "duration_seconds": 27.93759895570053,
+      "speed_kmh": 40.0,
+      "name": "Folsom St Westbound"
+    },
+    {
+      "u": "folsom_fremont",
+      "v": "folsom_1st",
+      "distance_km": 0.22066791356353854,
+      "duration_seconds": 19.86011222071847,
+      "speed_kmh": 40.0,
+      "name": "Folsom St Westbound"
+    },
+    {
+      "u": "folsom_fremont",
+      "v": "howard_fremont",
+      "distance_km": 0.31260262783105786,
+      "duration_seconds": 32.153413148337386,
+      "speed_kmh": 35.0,
+      "name": "Fremont St Northbound"
+    },
+    {
+      "u": "folsom_beale",
+      "v": "folsom_fremont",
+      "distance_km": 0.22756179285666664,
+      "duration_seconds": 20.480561357099997,
+      "speed_kmh": 40.0,
+      "name": "Folsom St Westbound"
+    },
+    {
+      "u": "dock_spur_1",
+      "v": "dock_spur_2",
+      "distance_km": 0.04924795506576289,
+      "duration_seconds": 11.819509215783095,
+      "speed_kmh": 15.0,
+      "name": "Private Service Spur"
+    },
+    {
+      "u": "dock_spur_2",
+      "v": "dock_spur_1",
+      "distance_km": 0.04924795506576289,
+      "duration_seconds": 11.819509215783095,
+      "speed_kmh": 15.0,
+      "name": "Private Service Spur"
+    }
+  ]
+}

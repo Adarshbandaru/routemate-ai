@@ -1,0 +1,11 @@
+capacity,matched_riders,matched_pct,total_obj,mean_travel_time_s,mean_detour_s,total_detour_km,utilization_pct,solve_time_ms
+1,10,40.0,721.37,273.4,378.8,10.289,100.0,13.13
+2,17,68.0,549.25,333.1,759.7,19.473,85.0,207.49
+3,17,68.0,400.77,416.1,858.3,18.004,53.3,539.99
+4,18,72.0,319.72,403.4,1051.6,17.557,32.5,763.47
+
+scale_label,capacity,status,exact_obj,greedy_obj,best_known_obj,opt_gap_pct,exact_ms,greedy_ms,speedup
+micro_3x4,2,optimal,178.49,56.85,178.49,68.15,22.68,11.81,1.92
+small_4x6,2,optimal,70.80,70.8,70.80,0.00,38.0,8.82,4.31
+medium_5x8,3,optimal,108.84,95.05,108.84,12.67,831.94,34.27,24.28
+stress_6x12_timeout,4,timeout,,81.37,91.82,,302.67,32.64,9.27

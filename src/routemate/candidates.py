@@ -116,13 +116,13 @@ def retrieve_candidates(rider: Journey, drivers: Sequence[Journey]) -> Retrieval
     return RetrievalResult(pairs, len(pairs), perf_counter() - started)
 
 
-def generate_features(pairs: Sequence[CandidatePair]) -> Tuple[FeatureRow, ...]:
+def generate_features(pairs: Sequence[CandidatePair], router: Optional[object] = None) -> Tuple[FeatureRow, ...]:
     """Calculate features for every retrieved pair; never filter a pair."""
     rows = []
     for pair in pairs:
         if not isinstance(pair, CandidatePair):
             raise TypeError("pairs must contain CandidatePair values")
-        values = MappingProxyType(dict(calculate_features(pair.driver, pair.rider)))
+        values = MappingProxyType(dict(calculate_features(pair.driver, pair.rider, router=router)))
         rows.append(FeatureRow(pair.driver_id, pair.rider_id, values))
     return tuple(rows)
 
@@ -167,10 +167,14 @@ def evaluate_feasibility(pair: CandidatePair, feature_row: FeatureRow) -> Feasib
                                not reasons, f, tuple(reasons), score)
 
 
-def run_candidate_pipeline(rider: Journey, drivers: Sequence[Journey]) -> CandidatePipelineResult:
+def run_candidate_pipeline(
+    rider: Journey,
+    drivers: Sequence[Journey],
+    router: Optional[object] = None,
+) -> CandidatePipelineResult:
     retrieval = retrieve_candidates(rider, drivers)
     feature_started = perf_counter()
-    rows = generate_features(retrieval.pairs)
+    rows = generate_features(retrieval.pairs, router=router)
     feature_seconds = perf_counter() - feature_started
     filtering_started = perf_counter()
     matrix = tuple(evaluate_feasibility(pair, row) for pair, row in zip(retrieval.pairs, rows))

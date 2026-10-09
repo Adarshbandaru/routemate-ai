@@ -10,6 +10,7 @@ requires-python = ">=3.9"
 
 [project.scripts]
 routemate-demo = "routemate.cli:main"
+routemate-api = "routemate.api:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]

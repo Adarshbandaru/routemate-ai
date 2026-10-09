@@ -1,0 +1,17 @@
+\begin{table}[htbp]
+\centering
+\small
+\caption{Two-Tier Candidate Pruning Performance on Downtown SF Network (Experiment 009).}
+\label{tab:pruning_comparison}
+\begin{tabular}{l c c c c c c c}
+\toprule
+\textbf{Method} & \textbf{\% Pruned} & \textbf{Routed} & \textbf{Recall} & \textbf{FN} & \textbf{FP Rem.} & \textbf{Top-1} & \textbf{Speedup} \\
+\midrule
+A No Pruning & 0.0\% & 450 & 1.000 & 0 & 443 & 100.0\% & 462.46$\times$ \\
+B Fixed Euclidean & 56.9\% & 194 & 1.000 & 0 & 187 & 100.0\% & 106.43$\times$ \\
+C Circuity Aware & 97.8\% & 10 & 0.143 & 6 & 9 & 86.7\% & 161.95$\times$ \\
+D Two Stage Geometric & 82.7\% & 78 & 1.000 & 0 & 71 & 100.0\% & 44.44$\times$ \\
+E Admissible Lower Bound & 81.8\% & 82 & 1.000 & 0 & 75 & 100.0\% & 124.86$\times$ \\
+\bottomrule
+\end{tabular}
+\end{table}

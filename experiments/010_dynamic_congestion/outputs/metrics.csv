@@ -1,0 +1,6 @@
+scenario,mean_travel_time_s,mean_delay_s,top1_change_rate,feasible_pairs,ndcg@3,static_eta_error_s,p@1,p@3,selected_detour_s
+no_congestion,45.0,0.0,0.0,17,0.3,0.0,0.3,0.178,79.3
+mild_congestion,45.7,1.5,0.0,17,0.3,3.5,0.3,0.178,80.7
+moderate_congestion,55.6,24.3,0.033,16,0.267,55.5,0.267,0.167,96.6
+severe_congestion,170.9,282.7,0.167,5,0.133,641.2,0.133,0.056,208.4
+asymmetric_directional,55.6,24.3,0.033,16,0.267,55.5,0.267,0.167,96.6

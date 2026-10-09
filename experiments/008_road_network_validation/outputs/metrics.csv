@@ -1,0 +1,8 @@
+approach,stage_type,precision@1,precision@3,precision@5,recall@1,recall@3,recall@5,ndcg@1,ndcg@3,ndcg@5,mrr,coverage_pct,mean_detour_km,mean_detour_sec,mean_pickup_km
+A_geometric_baseline,approach,0.12,0.12,0.088,0.12,0.32,0.38,0.12,0.257,0.279,0.243,84.0,7.758,470.4,3.909
+B_existing_heuristic,approach,0.12,0.12,0.088,0.12,0.32,0.38,0.12,0.257,0.279,0.243,84.0,7.758,470.4,3.909
+C_network_aware,approach,0.4,0.147,0.088,0.36,0.38,0.38,0.4,0.393,0.393,0.4,44.0,0.487,46.7,0.457
+1_geom_only,ablation,0.12,0.133,0.088,0.12,0.36,0.38,0.12,0.283,0.287,0.253,84.0,7.758,470.4,3.909
+2_geom_plus_net_dist,ablation,0.4,0.173,0.104,0.36,0.44,0.44,0.4,0.424,0.424,0.42,88.0,1.246,119.2,0.449
+3_geom_plus_net_time,ablation,0.4,0.173,0.104,0.36,0.44,0.44,0.4,0.424,0.424,0.42,88.0,1.226,117.9,0.461
+4_full_network_aware,ablation,0.4,0.147,0.088,0.36,0.38,0.38,0.4,0.393,0.393,0.4,44.0,0.487,46.7,0.457

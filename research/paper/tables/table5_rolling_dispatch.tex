@@ -1,0 +1,21 @@
+\begin{table*}[t]
+\centering
+\small
+\caption{Fleet-Wide Rolling-Horizon Dispatch Comparison Across Three Demand Regimes (Experiment 013).}
+\label{tab:rolling_dispatch}
+\begin{tabular}{l l c c c c c c c}
+\toprule
+\textbf{Regime} & \textbf{Policy} & \textbf{Fulfill \%} & \textbf{Cancel \%} & \textbf{Pool \%} & \textbf{Wait p50 / p95 (s)} & \textbf{VKT (km)} & \textbf{Insertions} & \textbf{Latency (ms)} \\
+\midrule
+Balanced & Static Batch & 92.7\% & 1.8\% & 0.0\% & 169 / 350 & 127.8 & 0 & 2.87 \\
+Balanced & Periodic Rolling & 90.9\% & 1.8\% & 100.0\% & 173 / 302 & 53.3 & 34 & 2.10 \\
+Balanced & Event Driven Rolling & 92.7\% & 3.6\% & 100.0\% & 103 / 251 & 50.5 & 36 & 0.99 \\
+High & Static Batch & 88.6\% & 4.4\% & 0.0\% & 199 / 392 & 259.1 & 0 & 5.98 \\
+High & Periodic Rolling & 88.6\% & 2.6\% & 100.0\% & 145 / 274 & 93.7 & 76 & 3.17 \\
+High & Event Driven Rolling & 90.4\% & 3.5\% & 100.0\% & 140 / 301 & 72.7 & 88 & 0.89 \\
+Low & Static Batch & 87.5\% & 8.3\% & 0.0\% & 167 / 264 & 62.2 & 0 & 0.83 \\
+Low & Periodic Rolling & 83.3\% & 8.3\% & 70.0\% & 146 / 257 & 41.7 & 7 & 0.56 \\
+Low & Event Driven Rolling & 87.5\% & 8.3\% & 100.0\% & 127 / 246 & 34.8 & 11 & 0.99 \\
+\bottomrule
+\end{tabular}
+\end{table*}

@@ -1,0 +1,220 @@
+{
+  "study_area": "San Francisco Downtown / Financial District & SoMa Corridor",
+  "baseline_comparisons": {
+    "A_static_geometric": {
+      "p@1": 0.3,
+      "ndcg@3": 0.3,
+      "mean_eta_error_s": 55.5
+    },
+    "B_static_network": {
+      "p@1": 0.3,
+      "ndcg@3": 0.3,
+      "mean_eta_error_s": 55.5
+    },
+    "C_dynamic_network": {
+      "p@1": 0.267,
+      "ndcg@3": 0.267,
+      "mean_eta_error_s": 0.0
+    }
+  },
+  "congestion_scenarios": {
+    "no_congestion": {
+      "scenario_name": "no_congestion",
+      "mean_travel_time_seconds": 45.0,
+      "mean_congestion_delay_seconds": 0.0,
+      "top1_recommendation_change_rate": 0.0,
+      "feasible_pairs_count": 17,
+      "ndcg_at_3": 0.3,
+      "mean_static_eta_error_seconds": 0.0,
+      "precision_at_1": 0.3,
+      "precision_at_3": 0.178,
+      "mean_selected_detour_seconds": 79.3
+    },
+    "mild_congestion": {
+      "scenario_name": "mild_congestion",
+      "mean_travel_time_seconds": 45.7,
+      "mean_congestion_delay_seconds": 1.5,
+      "top1_recommendation_change_rate": 0.0,
+      "feasible_pairs_count": 17,
+      "ndcg_at_3": 0.3,
+      "mean_static_eta_error_seconds": 3.5,
+      "precision_at_1": 0.3,
+      "precision_at_3": 0.178,
+      "mean_selected_detour_seconds": 80.7
+    },
+    "moderate_congestion": {
+      "scenario_name": "moderate_congestion",
+      "mean_travel_time_seconds": 55.6,
+      "mean_congestion_delay_seconds": 24.3,
+      "top1_recommendation_change_rate": 0.033,
+      "feasible_pairs_count": 16,
+      "ndcg_at_3": 0.267,
+      "mean_static_eta_error_seconds": 55.5,
+      "precision_at_1": 0.267,
+      "precision_at_3": 0.167,
+      "mean_selected_detour_seconds": 96.6
+    },
+    "severe_congestion": {
+      "scenario_name": "severe_congestion",
+      "mean_travel_time_seconds": 170.9,
+      "mean_congestion_delay_seconds": 282.7,
+      "top1_recommendation_change_rate": 0.167,
+      "feasible_pairs_count": 5,
+      "ndcg_at_3": 0.133,
+      "mean_static_eta_error_seconds": 641.2,
+      "precision_at_1": 0.133,
+      "precision_at_3": 0.056,
+      "mean_selected_detour_seconds": 208.4
+    },
+    "asymmetric_directional": {
+      "scenario_name": "asymmetric_directional",
+      "mean_travel_time_seconds": 55.6,
+      "mean_congestion_delay_seconds": 24.3,
+      "top1_recommendation_change_rate": 0.033,
+      "feasible_pairs_count": 16,
+      "ndcg_at_3": 0.267,
+      "mean_static_eta_error_seconds": 55.5,
+      "precision_at_1": 0.267,
+      "precision_at_3": 0.167,
+      "mean_selected_detour_seconds": 96.6
+    }
+  },
+  "time_window_sensitivities": [
+    {
+      "offset_minutes": -30,
+      "feasible_pairs_count": 17,
+      "feasibility_flip_count": 1,
+      "top1_rank_disagreement_rate": 0.033,
+      "mean_travel_time_shift_seconds": 4.3,
+      "mean_pickup_delay_shift_seconds": 9.6
+    },
+    {
+      "offset_minutes": -15,
+      "feasible_pairs_count": 17,
+      "feasibility_flip_count": 1,
+      "top1_rank_disagreement_rate": 0.033,
+      "mean_travel_time_shift_seconds": 1.3,
+      "mean_pickup_delay_shift_seconds": 2.7
+    },
+    {
+      "offset_minutes": -10,
+      "feasible_pairs_count": 16,
+      "feasibility_flip_count": 0,
+      "top1_rank_disagreement_rate": 0.0,
+      "mean_travel_time_shift_seconds": 0.6,
+      "mean_pickup_delay_shift_seconds": 1.2
+    },
+    {
+      "offset_minutes": -5,
+      "feasible_pairs_count": 16,
+      "feasibility_flip_count": 0,
+      "top1_rank_disagreement_rate": 0.0,
+      "mean_travel_time_shift_seconds": 0.1,
+      "mean_pickup_delay_shift_seconds": 0.2
+    },
+    {
+      "offset_minutes": 0,
+      "feasible_pairs_count": 16,
+      "feasibility_flip_count": 0,
+      "top1_rank_disagreement_rate": 0.0,
+      "mean_travel_time_shift_seconds": 0.0,
+      "mean_pickup_delay_shift_seconds": 0.0
+    },
+    {
+      "offset_minutes": 5,
+      "feasible_pairs_count": 16,
+      "feasibility_flip_count": 0,
+      "top1_rank_disagreement_rate": 0.0,
+      "mean_travel_time_shift_seconds": 0.2,
+      "mean_pickup_delay_shift_seconds": 0.5
+    },
+    {
+      "offset_minutes": 10,
+      "feasible_pairs_count": 17,
+      "feasibility_flip_count": 1,
+      "top1_rank_disagreement_rate": 0.033,
+      "mean_travel_time_shift_seconds": 0.6,
+      "mean_pickup_delay_shift_seconds": 1.7
+    },
+    {
+      "offset_minutes": 15,
+      "feasible_pairs_count": 17,
+      "feasibility_flip_count": 1,
+      "top1_rank_disagreement_rate": 0.033,
+      "mean_travel_time_shift_seconds": 1.3,
+      "mean_pickup_delay_shift_seconds": 3.4
+    },
+    {
+      "offset_minutes": 30,
+      "feasible_pairs_count": 17,
+      "feasibility_flip_count": 1,
+      "top1_rank_disagreement_rate": 0.033,
+      "mean_travel_time_shift_seconds": 4.4,
+      "mean_pickup_delay_shift_seconds": 10.4
+    }
+  ],
+  "pruning_evaluation": {
+    "total_candidate_pairs": 450,
+    "pruned_pairs_count": 334,
+    "pairs_sent_to_dynamic_routing": 116,
+    "percentage_pruned": 74.2,
+    "true_dynamic_feasible_pairs": 16,
+    "false_negatives": 0,
+    "feasible_recall": 1.0,
+    "top1_ranking_agreement_rate": 1.0,
+    "speedup_factor": 3.84,
+    "is_provably_admissible": true
+  },
+  "scaling_results": [
+    {
+      "scale_label": "scale_250",
+      "total_candidate_pairs": 250,
+      "baseline_routing_calls": 250,
+      "baseline_time_ms": 345.4,
+      "pruned_routing_calls": 114,
+      "pruned_time_ms": 143.3,
+      "speedup_factor": 2.4,
+      "false_negatives": 0
+    },
+    {
+      "scale_label": "scale_500",
+      "total_candidate_pairs": 500,
+      "baseline_routing_calls": 500,
+      "baseline_time_ms": 605.2,
+      "pruned_routing_calls": 194,
+      "pruned_time_ms": 244.9,
+      "speedup_factor": 2.5,
+      "false_negatives": 0
+    },
+    {
+      "scale_label": "scale_1000",
+      "total_candidate_pairs": 1000,
+      "baseline_routing_calls": 1000,
+      "baseline_time_ms": 1250.0,
+      "pruned_routing_calls": 421,
+      "pruned_time_ms": 529.1,
+      "speedup_factor": 2.4,
+      "false_negatives": 0
+    },
+    {
+      "scale_label": "scale_2500",
+      "total_candidate_pairs": 2500,
+      "baseline_routing_calls": 2500,
+      "baseline_time_ms": 3125.0,
+      "pruned_routing_calls": 1024,
+      "pruned_time_ms": 1287.7,
+      "speedup_factor": 2.4,
+      "false_negatives": 0
+    },
+    {
+      "scale_label": "scale_5000",
+      "total_candidate_pairs": 5000,
+      "baseline_routing_calls": 5000,
+      "baseline_time_ms": 6250.0,
+      "pruned_routing_calls": 2096,
+      "pruned_time_ms": 2636.9,
+      "speedup_factor": 2.4,
+      "false_negatives": 0
+    }
+  ]
+}
