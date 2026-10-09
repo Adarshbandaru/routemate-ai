@@ -1158,4 +1158,85 @@ export const EXPERIMENT_DATA = {
   },
 };
 
+/* =============================================
+   PREDICTIVE FLEET REBALANCING TRANSIT ZONES
+   ============================================= */
+
+export const SF_TRANSIT_ZONES = [
+  { zone_id: 'Z1_fidi', name: 'Financial District', coordinate: { latitude: 37.7892, longitude: -122.4014 }, radius_km: 0.8, base_demand: 18 },
+  { zone_id: 'Z2_soma', name: 'SoMa / Moscone Hub', coordinate: { latitude: 37.7833, longitude: -122.4031 }, radius_km: 1.0, base_demand: 22 },
+  { zone_id: 'Z3_caltrain', name: 'Mission Bay / Caltrain', coordinate: { latitude: 37.7766, longitude: -122.3949 }, radius_km: 1.2, base_demand: 25 },
+  { zone_id: 'Z4_civic', name: 'Civic Center / Mid-Market', coordinate: { latitude: 37.7763, longitude: -122.4172 }, radius_km: 0.9, base_demand: 14 },
+  { zone_id: 'Z5_mission', name: 'Mission District Arterial', coordinate: { latitude: 37.7650, longitude: -122.4197 }, radius_km: 1.4, base_demand: 16 },
+];
+
+export function runFleetRebalancingSimulation(idleCount = 20, regime = 'evening_peak') {
+  const mults = regime === 'morning_peak'
+    ? { Z1_fidi: 1.8, Z2_soma: 1.6, Z3_caltrain: 0.8, Z4_civic: 0.7, Z5_mission: 0.5 }
+    : regime === 'evening_peak'
+    ? { Z1_fidi: 0.5, Z2_soma: 1.3, Z3_caltrain: 2.0, Z4_civic: 0.8, Z5_mission: 1.2 }
+    : { Z1_fidi: 1.0, Z2_soma: 1.0, Z3_caltrain: 1.0, Z4_civic: 1.0, Z5_mission: 1.0 };
+
+  const zoneDemands = SF_TRANSIT_ZONES.map((z) => ({
+    ...z,
+    effectiveDemand: Math.round(z.base_demand * (mults[z.zone_id] || 1.0) * 10) / 10,
+  }));
+  const totalDemand = zoneDemands.reduce((s, z) => s + z.effectiveDemand, 0);
+
+  const zoneStats = zoneDemands.map((z, idx) => {
+    const targetVehicles = Math.max(1, Math.round((z.effectiveDemand / totalDemand) * idleCount));
+    const initialVehicles = idx === 0 ? Math.round(idleCount * 0.45) : idx === 3 ? Math.round(idleCount * 0.3) : Math.max(0, Math.floor(idleCount * 0.08));
+    const deficit = targetVehicles - initialVehicles;
+    return {
+      ...z,
+      targetVehicles,
+      initialVehicles,
+      deficit,
+    };
+  });
+
+  const directives = [];
+  const surplus = zoneStats.filter((z) => z.deficit < 0);
+  const deficits = zoneStats.filter((z) => z.deficit > 0);
+
+  let idCounter = 1;
+  for (const def of deficits) {
+    let needed = def.deficit;
+    for (const sur of surplus) {
+      if (needed <= 0) break;
+      let available = Math.abs(sur.deficit);
+      let toMove = Math.min(needed, available);
+      for (let m = 0; m < toMove; m++) {
+        const distKm = Math.round(haversineKm(sur.coordinate, def.coordinate) * 100) / 100;
+        directives.push({
+          id: `reloc-${idCounter++}`,
+          driver_id: `veh-${sur.zone_id.slice(0, 2)}-${String(idCounter).padStart(3, '0')}`,
+          from_zone: sur.name,
+          to_zone: def.name,
+          from_coord: sur.coordinate,
+          to_coord: def.coordinate,
+          distance_km: distKm,
+          est_minutes: Math.round((distKm / 24.0) * 60 * 10) / 10,
+        });
+      }
+      needed -= toMove;
+    }
+  }
+
+  const totalVkt = Math.round(directives.reduce((s, d) => s + d.distance_km, 0) * 100) / 100;
+  const initialUnmet = deficits.reduce((s, d) => s + d.deficit, 0);
+  const remainingUnmet = Math.max(0, initialUnmet - directives.length);
+
+  return {
+    regime,
+    idleCount,
+    zoneStats,
+    directives,
+    totalVkt,
+    initialUnmet,
+    remainingUnmet,
+    deficitReductionPct: initialUnmet > 0 ? Math.round(((initialUnmet - remainingUnmet) / initialUnmet) * 1000) / 10 : 0,
+  };
+}
+
 

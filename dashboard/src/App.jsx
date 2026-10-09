@@ -8,11 +8,13 @@ import ArchitectureView from './components/ArchitectureView';
 import BatchAssignment from './components/BatchAssignment';
 import LiveAPI from './components/LiveAPI';
 import GuidedDemo from './components/GuidedDemo';
+import FleetRebalanceView from './components/FleetRebalanceView';
 
 const TABS = [
   { id: 'demo', label: '🚀 Guided Demo', icon: '🚀' },
   { id: 'playground', label: '🗺️ Match Playground', icon: '🗺️' },
   { id: 'batch', label: '🚐 Batch Assignment', icon: '🚐' },
+  { id: 'rebalance', label: '🤖 Fleet Staging', icon: '🤖' },
   { id: 'experiments', label: '📊 Experiments', icon: '📊' },
   { id: 'api', label: '🔌 Live API', icon: '🔌' },
   { id: 'architecture', label: '🏗️ Architecture', icon: '🏗️' },
@@ -338,6 +340,7 @@ export default function App() {
         )}
 
         {activeTab === 'batch' && <BatchAssignment />}
+        {activeTab === 'rebalance' && <FleetRebalanceView />}
         {activeTab === 'experiments' && <ExperimentExplorer />}
         {activeTab === 'api' && <LiveAPI />}
         {activeTab === 'architecture' && <ArchitectureView />}

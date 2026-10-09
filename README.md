@@ -2,10 +2,13 @@
 
 > **Interpretable Journey Compatibility, Multi-Rider Batch Assignment, and Event-Driven Fleet Dispatch System.**
 
-[![Python Tests](https://img.shields.io/badge/tests-153%20passed-brightgreen.svg)]()
-[![Frontend Build](https://img.shields.io/badge/dashboard-Vite%20%2B%20React-blue.svg)]()
-[![Code Quality](https://img.shields.io/badge/linter-oxlint%20clean-blueviolet.svg)]()
-[![Evidence](https://img.shields.io/badge/experiments-14%20verified-success.svg)]()
+[![CI Status](https://github.com/Adarshbandaru/routemate-ai/actions/workflows/ci.yml/badge.svg)](https://github.com/Adarshbandaru/routemate-ai/actions/workflows/ci.yml)
+[![Python Tests](https://img.shields.io/badge/tests-158%20passed-brightgreen.svg)]()
+[![Python Version](https://img.shields.io/badge/python-3.10%20%7C%203.11%20%7C%203.12-blue.svg)]()
+[![Frontend Build](https://img.shields.io/badge/dashboard-Vite%20%2B%20React%2019-61dafb.svg)]()
+[![Docker](https://img.shields.io/badge/docker-ready-2496ed.svg)]()
+[![Research Preprint](https://img.shields.io/badge/research-preprint%20available-ff69b4.svg)](research/paper/paper.md)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 RouteMate AI is a modular, transparent matching and fleet dispatch intelligence platform for shared mobility. It integrates two-tier admissible spatial pruning, zero-tolerance hard feasibility & safety filtering, explainable candidate ranking, combinatorial multi-rider pooling heuristics, sub-5ms dynamic incident recourse, and event-driven rolling-horizon fleet dispatch.
 
@@ -268,4 +271,14 @@ All trajectories, commuter demands, and vehicle cohorts generated in this reposi
 ## 📄 License & Research Citation
 
 This project is released under the **MIT License**.
-Research papers, mathematical derivations, and synthesis manuscripts are located in `research/paper/paper.md`.
+The complete pre-print manuscript and artifacts are located in [`research/paper/paper.md`](research/paper/paper.md) (standalone academic pre-print: [`research/paper/preprint.html`](research/paper/preprint.html)).
+
+```bibtex
+@article{bandaru2026routemate,
+  title   = {RouteMate AI: Real-Time Multi-Rider Pooling, Admissible Pruning, and Event-Driven Rolling Dispatch under Road Network Congestion and Recourse},
+  author  = {Bandaru, Adarsh},
+  journal = {Omnirush AI Research Preprint},
+  year    = {2026},
+  url     = {https://github.com/Adarshbandaru/routemate-ai}
+}
+```
