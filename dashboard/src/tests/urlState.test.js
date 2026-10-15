@@ -33,3 +33,22 @@ test('buildHashString omits empty or null parameters', () => {
   const hash = buildHashString('experiments', { exp: '008', filter: null, query: '' });
   assert.strictEqual(hash, '#/experiments?exp=008');
 });
+
+test('parseHashState and buildHashString handle Phase 2 driver subroutes', () => {
+  const driverRoutes = [
+    'driver/auth',
+    'driver/dashboard',
+    'driver/active-ride',
+    'driver/earnings',
+    'driver/profile',
+  ];
+
+  for (const r of driverRoutes) {
+    const built = buildHashString(r, { driver_id: 'drv_priya' });
+    assert.strictEqual(built, `#/${r}?driver_id=drv_priya`);
+    const parsed = parseHashState(built);
+    assert.strictEqual(parsed.route, r);
+    assert.strictEqual(parsed.params.driver_id, 'drv_priya');
+  }
+});
+

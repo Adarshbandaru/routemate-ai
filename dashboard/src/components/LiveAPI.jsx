@@ -13,7 +13,10 @@ import { updateUrlHash } from '../utils/urlState';
 import { Terminal, Copy, Check, Download } from 'lucide-react';
 
 export default function LiveAPI() {
-  const [apiUrl, setApiUrl] = useState('http://127.0.0.1:8000');
+  const [apiUrl, setApiUrl] = useState(
+    (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_BASE_URL) ||
+    'http://127.0.0.1:8000'
+  );
   const [endpoint, setEndpoint] = useState('matches'); // 'matches' | 'assignments'
   const [health, setHealth] = useState(null);
   const [polling, setPolling] = useState(false);
@@ -560,7 +563,7 @@ export default function LiveAPI() {
               </button>
             </div>
           </div>
-          <div className="card-body" style={{ maxHeight: '240px', overflowY: 'auto', padding: 0 }}>
+          <div className="card-body" style={{ maxHeight: '240px', overflow: 'auto', WebkitOverflowScrolling: 'touch', padding: 0 }}>
             <table className="data-table">
               <thead>
                 <tr>

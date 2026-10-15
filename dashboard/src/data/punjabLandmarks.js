@@ -1,0 +1,16 @@
+export const PUNJAB_LANDMARKS = [
+  { name: 'Lovely Professional University (LPU Main Gate)', address: 'NH-44, Phagwara, Punjab', lat: 31.2536, lng: 75.7037 },
+  { name: 'Lovely Professional University (LPU Law Gate)', address: 'Phagwara, Punjab', lat: 31.2536, lng: 75.7037 },
+  { name: 'Jalandhar City Railway Station', address: 'Railway Road, Jalandhar, Punjab', lat: 31.3260, lng: 75.5762 },
+  { name: 'Jalandhar Cantt Railway Station', address: 'Jalandhar Cantt, Punjab', lat: 31.2910, lng: 75.6170 },
+  { name: 'Jalandhar ISBT Bus Stand', address: 'Garha Road, Jalandhar, Punjab', lat: 31.3180, lng: 75.5850 },
+  { name: 'BMC Chowk & Model Town', address: 'Central Jalandhar, Punjab', lat: 31.3150, lng: 75.5800 },
+  { name: 'Rama Mandi Flyover Junction', address: 'GT Road / Hoshiarpur Road, Jalandhar', lat: 31.2950, lng: 75.6320 },
+  { name: 'Phagwara Interstate Bus Stand', address: 'GT Road, Phagwara, Punjab', lat: 31.2230, lng: 75.7710 },
+  { name: 'Phagwara Sugar Mill Chowk', address: 'Sugar Mill Crossing, GT Road, Phagwara', lat: 31.2230, lng: 75.7710 },
+  { name: 'Ludhiana Railway Station', address: 'Old GT Road, Ludhiana, Punjab', lat: 30.9010, lng: 75.8573 },
+  { name: 'Ludhiana Clock Tower (Ghanta Ghar)', address: 'Central Ludhiana, Punjab', lat: 30.9120, lng: 75.8450 },
+  { name: 'Ludhiana Focal Point Phase V', address: 'Industrial Area, Ludhiana, Punjab', lat: 30.8850, lng: 75.9120 },
+  { name: 'Adampur Airport (AIP)', address: 'Adampur Airfield, Jalandhar, Punjab', lat: 31.4330, lng: 75.7580 },
+  { name: 'Amritsar Golden Temple Corridor', address: 'Golden Temple Road, Amritsar, Punjab', lat: 31.6200, lng: 74.8765 },
+];

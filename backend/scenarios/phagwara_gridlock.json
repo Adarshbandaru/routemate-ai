@@ -1,80 +1,60 @@
 {
   "id": "phagwara_gridlock",
-  "name": "Phagwara Gridlock (Incident)",
-  "description": "NH1 closure near Phagwara, demonstrating dynamic rerouting",
+  "name": "Phagwara Gridlock — Dynamic Detour",
+  "description": "Rama Mandi bottleneck incident with real-time detour recourse",
   "pickup": {
-    "lat": 30.9020,
-    "lng": 76.7107,
-    "address": "LPU Campus, Phagwara, Punjab",
-    "name": "LPU Gate",
+    "lat": 31.2536,
+    "lng": 75.7037,
+    "address": "Lovely Professional University, Phagwara, Punjab",
+    "name": "LPU Main Gate",
     "icon": "graduation"
   },
   "dropoff": {
-    "lat": 31.7256,
-    "lng": 75.5241,
-    "address": "Jalandhar City Center, Jalandhar, Punjab",
-    "name": "Jalandhar Center",
+    "lat": 31.3260,
+    "lng": 75.5762,
+    "address": "Civil Lines, Jalandhar, Punjab",
+    "name": "Jalandhar City Center",
     "icon": "store"
   },
-  "distance_km": 32.4,
-  "duration_min": 42,
+  "distance_km": 26.8,
+  "duration_min": 34,
   "incident": {
-    "description": "NH1 closure near Rama Mandi",
-    "lat": 31.5000,
-    "lng": 76.2000
+    "description": "Heavy congestion near Rama Mandi Flyover (+12 min delay)",
+    "lat": 31.2950,
+    "lng": 75.6320
   },
   "route_polyline": [
-    [30.9020, 76.7107],
-    [30.9200, 76.6800],
-    [30.9500, 76.6500],
-    [31.0000, 76.6000],
-    [31.1000, 76.5000],
-    [31.2000, 76.4000],
-    [31.3000, 76.3500],
-    [31.4000, 76.3000],
-    [31.5500, 76.2000],
-    [31.6000, 75.9000],
-    [31.6500, 75.7500],
-    [31.7000, 75.6000],
-    [31.7200, 75.5500],
-    [31.7256, 75.5241]
+    [31.2536, 75.7037],
+    [31.2680, 75.6910],
+    [31.2850, 75.6700],
+    [31.3020, 75.6420],
+    [31.3180, 75.6100],
+    [31.3260, 75.5762]
   ],
   "available_drivers": [
     {
       "id": "driver_009",
       "name": "Amarjit Singh",
-      "rating": 4.82,
+      "rating": 4.89,
       "reviews": 523,
       "vehicle_type": "sedan",
       "vehicle_name": "Maruti Ciaz",
-      "vehicle_number": "PB 09 QR 8901",
-      "current_lat": 30.9050,
-      "current_lng": 76.7050,
-      "current_heading": 270,
-      "eta_to_pickup_min": 1,
-      "eta_to_dropoff_min": 42,
-      "seats_available": 2,
-      "price_estimate": "₹580",
-      "photo_url": "https://i.pravatar.cc/150?img=9",
-      "phone": "+91 98765 43218"
-    },
-    {
-      "id": "driver_010",
-      "name": "Deepika Sharma",
-      "rating": 4.75,
-      "reviews": 401,
-      "vehicle_type": "sedan",
-      "vehicle_name": "Honda Accord",
-      "vehicle_number": "PB 10 ST 2345",
-      "current_lat": 30.9100,
-      "current_lng": 76.7200,
-      "current_heading": 225,
-      "eta_to_pickup_min": 3,
-      "eta_to_dropoff_min": 43,
+      "vehicle_number": "PB 08 QR 8901",
+      "current_lat": 31.2550,
+      "current_lng": 75.7010,
+      "current_heading": 310,
+      "eta_to_pickup_min": 2,
+      "eta_to_dropoff_min": 34,
       "seats_available": 3,
-      "price_estimate": "₹620",
-      "photo_url": "https://i.pravatar.cc/150?img=10",
-      "phone": "+91 98765 43219"
+      "price_estimate": "₹340",
+      "detour_km": 1.6,
+      "match_score": 89,
+      "reasons": [
+        "Utilizes Cantt bypass route circumventing Rama Mandi incident",
+        "Dynamic recourse reduces trip duration by 8 min"
+      ],
+      "photo_url": "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100&h=100&fit=crop&crop=faces",
+      "phone": "+91 98765 43218"
     }
   ]
 }

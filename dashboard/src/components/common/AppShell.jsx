@@ -6,11 +6,23 @@ import {
   Search,
   HelpCircle,
   X,
+  User,
+  History,
+  LogOut,
+  Menu,
+  Car,
+  Smartphone,
+  Calendar,
+  Wallet,
 } from 'lucide-react';
 import AudienceToggle from './AudienceToggle';
 import CommandPalette from './CommandPalette';
 import EvidenceLedgerDrawer from './EvidenceLedgerDrawer';
+import AuthModal from './AuthModal';
+import MyBookingsDrawer from './MyBookingsDrawer';
+import MobileNavDrawer from './MobileNavDrawer';
 import { NAV_ITEMS } from './navConfig';
+import { getStoredUser, apiService } from '../../services/apiService';
 
 export default function AppShell({
   currentRoute,
@@ -27,6 +39,26 @@ export default function AppShell({
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [ledgerOpen, setLedgerOpen] = useState(false);
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
+  const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [bookingsDrawerOpen, setBookingsDrawerOpen] = useState(false);
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const [currentUser, setCurrentUser] = useState(() => getStoredUser());
+
+  useEffect(() => {
+    // Attempt background sync of profile if token exists
+    if (!currentUser) {
+      apiService.getProfile().then((res) => {
+        if (res?.data && !res.is_demo) {
+          setCurrentUser(res.data);
+        }
+      }).catch(() => {});
+    }
+  }, [currentUser]);
+
+  const handleLogout = async () => {
+    await apiService.logout();
+    setCurrentUser(null);
+  };
 
   // Global Keyboard Shortcuts
   useEffect(() => {
@@ -67,13 +99,59 @@ export default function AppShell({
           </div>
         </div>
 
-        {/* Global Controls & Status */}
-        <div className="header-status">
+        {/* Desktop Global Controls & Status */}
+        <div className="header-status header-status-desktop">
           {/* Environment Status Badge */}
           <div className="status-indicator" title={apiOnline ? 'Connected to live backend' : 'Running on deterministic client-side simulation'}>
             <div className={`status-dot ${apiOnline ? 'online' : 'offline'}`} />
             <span className="font-mono text-sm">{apiOnline ? 'Live API Connected' : 'Offline Simulation'}</span>
           </div>
+
+          {/* My Rides History Button */}
+          <button
+            type="button"
+            className="btn btn-outline btn-sm"
+            onClick={() => setBookingsDrawerOpen(true)}
+            title="View Real Booking History"
+            aria-label="View Booking History"
+          >
+            <History size={13} aria-hidden="true" />
+            <span>My Rides</span>
+          </button>
+
+          {/* User Authentication Profile Button */}
+          {currentUser ? (
+            <div className="user-profile-badge-group">
+              <button
+                type="button"
+                className="btn btn-outline btn-sm user-profile-btn"
+                onClick={() => setAuthModalOpen(true)}
+                title={`Signed in as ${currentUser.name || currentUser.phone}`}
+              >
+                <User size={13} className="text-primary" />
+                <span>{currentUser.name ? currentUser.name.split(' ')[0] : 'Rider'}</span>
+              </button>
+              <button
+                type="button"
+                className="btn btn-ghost btn-sm logout-mini-btn"
+                onClick={handleLogout}
+                title="Log out"
+                aria-label="Log out"
+              >
+                <LogOut size={12} />
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              className="btn btn-primary btn-sm auth-signin-btn"
+              onClick={() => setAuthModalOpen(true)}
+              title="Sign in with phone OTP"
+            >
+              <User size={13} />
+              <span>Sign In</span>
+            </button>
+          )}
 
           {/* Quick Search / Command Palette Trigger */}
           <button
@@ -141,6 +219,34 @@ export default function AppShell({
             <HelpCircle size={15} />
           </button>
         </div>
+
+        {/* Mobile Global Controls: Compact brand actions + Menu toggle */}
+        <div className="header-status-mobile">
+          <div className="mobile-status-dot-wrap" title={apiOnline ? 'Live API Online' : 'Simulation Mode'}>
+            <div className={`status-dot ${apiOnline ? 'online' : 'offline'}`} />
+          </div>
+
+          <button
+            type="button"
+            className="theme-toggle"
+            onClick={onToggleTheme}
+            title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+            aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+          >
+            {theme === 'dark' ? <Sun size={15} /> : <Moon size={15} />}
+          </button>
+
+          <button
+            type="button"
+            className="mobile-hamburger-btn"
+            onClick={() => setMobileNavOpen((prev) => !prev)}
+            title={mobileNavOpen ? 'Close navigation menu' : 'Open navigation menu'}
+            aria-label={mobileNavOpen ? 'Close navigation menu' : 'Open navigation menu'}
+            aria-expanded={mobileNavOpen}
+          >
+            {mobileNavOpen ? <X size={20} /> : <Menu size={20} />}
+          </button>
+        </div>
       </header>
 
       {/* Primary Navigation Tabs */}
@@ -157,7 +263,6 @@ export default function AppShell({
               onClick={() => onNavigate(item.id)}
               aria-current={isActive ? 'page' : undefined}
             >
-              <span className="nav-tab-badge font-mono">{item.num}</span>
               <Icon size={14} className="nav-tab-icon" aria-hidden="true" />
               <span>{item.label}</span>
             </button>
@@ -172,30 +277,51 @@ export default function AppShell({
 
       {/* Bottom Navigation for Mobile Breakpoints */}
       <nav className="mobile-bottom-nav" aria-label="Mobile navigation">
-        {NAV_ITEMS.slice(0, 5).map((item) => {
-          const Icon = item.icon;
-          const isActive = currentRoute === item.id;
-          return (
-            <button
-              key={item.id}
-              type="button"
-              className={`mobile-nav-btn ${isActive ? 'active' : ''}`}
-              onClick={() => onNavigate(item.id)}
-              aria-current={isActive ? 'page' : undefined}
-            >
-              <Icon size={18} />
-              <span>{item.label.split(' ')[0]}</span>
-            </button>
-          );
-        })}
         <button
           type="button"
-          className="mobile-nav-btn"
-          onClick={() => setPaletteOpen(true)}
-          aria-label="More navigation and actions"
+          className={`mobile-nav-btn ${currentRoute === 'ride' ? 'active' : ''}`}
+          onClick={() => onNavigate('ride')}
+          aria-current={currentRoute === 'ride' ? 'page' : undefined}
         >
-          <Search size={18} />
-          <span>More</span>
+          <Car size={18} />
+          <span>Ride</span>
+        </button>
+        <button
+          type="button"
+          className={`mobile-nav-btn ${currentRoute.startsWith('driver') ? 'active' : ''}`}
+          onClick={() => onNavigate('driver')}
+          aria-current={currentRoute.startsWith('driver') ? 'page' : undefined}
+        >
+          <Smartphone size={18} />
+          <span>Driver</span>
+        </button>
+        <button
+          type="button"
+          className={`mobile-nav-btn ${currentRoute === 'scheduled' ? 'active' : ''}`}
+          onClick={() => onNavigate('scheduled')}
+          aria-current={currentRoute === 'scheduled' ? 'page' : undefined}
+        >
+          <Calendar size={18} />
+          <span>Schedule</span>
+        </button>
+        <button
+          type="button"
+          className={`mobile-nav-btn ${currentRoute === 'wallet' ? 'active' : ''}`}
+          onClick={() => onNavigate('wallet')}
+          aria-current={currentRoute === 'wallet' ? 'page' : undefined}
+        >
+          <Wallet size={18} />
+          <span>Wallet</span>
+        </button>
+        <button
+          type="button"
+          className={`mobile-nav-btn ${!['ride', 'driver', 'scheduled', 'wallet'].includes(currentRoute) || mobileNavOpen ? 'active' : ''}`}
+          onClick={() => setMobileNavOpen(true)}
+          aria-label="Open all navigation routes and tools"
+          aria-expanded={mobileNavOpen}
+        >
+          <Menu size={18} />
+          <span>Menu</span>
         </button>
       </nav>
 
@@ -262,6 +388,44 @@ export default function AppShell({
           </div>
         </div>
       )}
+
+      {/* Auth & Onboarding Modal */}
+      <AuthModal
+        isOpen={authModalOpen}
+        onClose={() => setAuthModalOpen(false)}
+        onAuthSuccess={(user) => {
+          setCurrentUser(user);
+        }}
+      />
+
+      {/* Persistent Rides History Drawer */}
+      <MyBookingsDrawer
+        isOpen={bookingsDrawerOpen}
+        onClose={() => setBookingsDrawerOpen(false)}
+        onBookNewRide={() => onNavigate('ride')}
+      />
+
+      {/* Comprehensive Mobile Navigation Drawer */}
+      <MobileNavDrawer
+        isOpen={mobileNavOpen}
+        onClose={() => setMobileNavOpen(false)}
+        currentRoute={currentRoute}
+        onNavigate={onNavigate}
+        currentUser={currentUser}
+        onOpenAuth={() => setAuthModalOpen(true)}
+        onLogout={handleLogout}
+        onOpenPalette={() => setPaletteOpen(true)}
+        onOpenLedger={() => setLedgerOpen(true)}
+        onOpenBookings={() => setBookingsDrawerOpen(true)}
+        onOpenShortcuts={() => setShortcutsOpen(true)}
+        theme={theme}
+        onToggleTheme={onToggleTheme}
+        audienceMode={audienceMode}
+        onChangeAudienceMode={onChangeAudienceMode}
+        reducedMotion={reducedMotion}
+        onToggleReducedMotion={onToggleReducedMotion}
+        apiOnline={apiOnline}
+      />
     </div>
   );
 }

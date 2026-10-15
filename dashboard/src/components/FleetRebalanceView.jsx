@@ -63,7 +63,7 @@ export default function FleetRebalanceView({ initialRegime = 'evening_peak' }) {
         attributionControl: true,
       }).setView([31.18, 75.72], 10);
 
-      createBaseTileLayer('google_roadmap').addTo(mapInstanceRef.current);
+      createBaseTileLayer('esri_light').addTo(mapInstanceRef.current);
     }
 
     const map = mapInstanceRef.current;

@@ -117,7 +117,7 @@ export default function RouteMap({
         attributionControl: true,
       }).setView([31.2536, 75.7037], 12);
 
-      createBaseTileLayer('google_roadmap').addTo(mapInstanceRef.current);
+      createBaseTileLayer('esri_light').addTo(mapInstanceRef.current);
     }
 
     const map = mapInstanceRef.current;

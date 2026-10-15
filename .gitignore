@@ -21,9 +21,19 @@ experiments/*/outputs/feasibility_matrix.csv
 data/raw/
 data/processed/
 artifacts/
+.agents/
+skills-lock.json
 
 # Secrets and local configuration.
 .env
 .env.*
 !.env.example
 
+# Database backups and SQLite runtime journals
+backend/backups/
+*.db
+*.sqlite
+*.sqlite3
+*.db-journal
+*.db-wal
+*.db-shm

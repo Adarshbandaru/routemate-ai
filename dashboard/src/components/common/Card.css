@@ -1,0 +1,25 @@
+.card {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-xl);
+  padding: var(--spacing-6);
+  box-shadow: var(--shadow-sm);
+  transition: all var(--duration-fast) var(--easing-out);
+  color: var(--text-primary);
+}
+
+.card:hover {
+  box-shadow: var(--shadow-md);
+}
+
+.card.elevated {
+  box-shadow: var(--shadow-lg);
+  background-color: var(--bg-surface);
+}
+
+@media (max-width: 768px) {
+  .card {
+    padding: var(--spacing-4);
+    border-radius: var(--radius-lg);
+  }
+}

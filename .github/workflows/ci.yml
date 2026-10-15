@@ -6,6 +6,9 @@ on:
   pull_request:
     branches: [ main ]
 
+permissions:
+  contents: read
+
 jobs:
   backend-tests:
     name: Backend Tests (${{ matrix.python-version }})
@@ -30,6 +33,10 @@ jobs:
       - name: Run test suite
         run: |
           python -m unittest discover -s tests -v
+
+      - name: Verify database backup utility
+        run: |
+          python -m backend.scripts.backup_db
 
   frontend-quality:
     name: Frontend Lint & Build

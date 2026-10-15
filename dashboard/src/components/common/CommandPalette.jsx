@@ -41,11 +41,12 @@ export default function CommandPalette({
   const items = useMemo(() => {
     const list = [
       // Navigation
-      { id: 'nav-demo', category: 'Navigation', title: 'Guided Demo', subtitle: 'Step-by-step interactive workflow walkthrough', icon: Compass, action: () => onNavigateRoute('demo') },
+      { id: 'nav-ride', category: 'Navigation', title: 'Book a Ride', subtitle: 'Punjab shared mobility corridor & matching experience', icon: Compass, action: () => onNavigateRoute('ride') },
+      { id: 'nav-demo', category: 'Navigation', title: 'Guided Walkthrough', subtitle: 'Step-by-step interactive workflow walkthrough', icon: Compass, action: () => onNavigateRoute('demo') },
       { id: 'nav-playground', category: 'Navigation', title: 'Match Playground', subtitle: 'Interactive corridor geometry & feasibility matrix', icon: Activity, action: () => onNavigateRoute('playground') },
       { id: 'nav-batch', category: 'Navigation', title: 'Batch Assignment', subtitle: 'Solver race: Greedy, Auction, and Exact B&B', icon: Zap, action: () => onNavigateRoute('batch') },
       { id: 'nav-staging', category: 'Navigation', title: 'Fleet Staging', subtitle: 'Transit zone predictive fleet rebalancing', icon: Layers, action: () => onNavigateRoute('staging') },
-      { id: 'nav-experiments', category: 'Navigation', title: 'Experiments Explorer', subtitle: 'All 14 checked-in empirical benchmarks', icon: FlaskConical, action: () => onNavigateRoute('experiments') },
+      { id: 'nav-experiments', category: 'Navigation', title: '14 Experiments', subtitle: 'All 14 checked-in empirical benchmarks', icon: FlaskConical, action: () => onNavigateRoute('experiments') },
       { id: 'nav-api', category: 'Navigation', title: 'Live API Console', subtitle: 'Interactive REST API client & offline simulation', icon: Sliders, action: () => onNavigateRoute('api') },
       { id: 'nav-architecture', category: 'Navigation', title: 'System Architecture', subtitle: 'Data flow and pipeline mathematical specification', icon: Layers, action: () => onNavigateRoute('architecture') },
 

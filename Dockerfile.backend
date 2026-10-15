@@ -1,0 +1,37 @@
+# RouteMate AI — Backend Production Dockerfile (Phase 4)
+# Multi-stage lightweight, secure Python container
+
+FROM python:3.11-slim AS builder
+
+WORKDIR /app
+COPY backend/requirements.txt ./requirements.txt
+RUN pip install --no-cache-dir --user -r requirements.txt
+
+# Final Runtime Stage
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Create non-root system user for security
+RUN groupadd -r appuser && useradd -r -g appuser -u 1000 appuser
+
+# Copy installed dependencies from builder
+COPY --from=builder /root/.local /home/appuser/.local
+ENV PATH=/home/appuser/.local/bin:$PATH
+ENV PYTHONPATH=/app
+
+# Copy application source
+COPY backend/ ./backend/
+COPY src/ ./src/
+
+# Ensure SQLite storage directory is writable
+RUN chown -R appuser:appuser /app
+
+USER appuser
+
+EXPOSE 8000
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+  CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')" || exit 1
+
+CMD ["python", "-m", "uvicorn", "backend.app.main:socket_app", "--host", "0.0.0.0", "--port", "8000"]

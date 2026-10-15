@@ -1,0 +1,227 @@
+.scheduled-booking-page {
+  width: 100%;
+  max-width: 640px;
+  margin: 0 auto;
+  padding: var(--spacing-6);
+  box-sizing: border-box;
+}
+
+.scheduled-page-header {
+  margin-bottom: var(--spacing-6);
+  text-align: center;
+}
+
+.scheduled-page-header h1 {
+  margin: 0 0 var(--spacing-2) 0;
+  font-size: var(--font-size-2xl);
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.scheduled-page-header p {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.schedule-form-card {
+  margin-bottom: var(--spacing-8);
+}
+
+.schedule-form-card form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-4);
+}
+
+.schedule-grid-2 {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: var(--spacing-3);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.route-preview-box {
+  padding: var(--spacing-3) var(--spacing-4);
+  background-color: var(--bg-elevated);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  font-size: var(--font-size-sm);
+  color: var(--text-primary);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+}
+
+.route-preview-row {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+}
+
+.route-preview-label {
+  font-size: var(--font-size-xs);
+  text-transform: uppercase;
+  font-weight: 600;
+  color: var(--text-muted);
+  min-width: 45px;
+}
+
+.fare-estimate-strip {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-3) var(--spacing-4);
+  background-color: var(--accent-primary-subtle);
+  border: 1px solid var(--color-primary-light);
+  border-radius: var(--radius-lg);
+}
+
+.fare-estimate-label {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+}
+
+.fare-estimate-value {
+  font-size: var(--font-size-xl);
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+.form-actions {
+  display: flex;
+  gap: var(--spacing-4);
+  margin-top: var(--spacing-2);
+}
+
+.form-actions button {
+  flex: 1;
+}
+
+.scheduled-rides-section {
+  margin-top: var(--spacing-8);
+}
+
+.scheduled-rides-section h2 {
+  margin-bottom: var(--spacing-4);
+  font-size: var(--font-size-xl);
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.scheduled-rides-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-3);
+}
+
+.scheduled-ride-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--spacing-4);
+}
+
+.scheduled-ride-info {
+  flex: 1;
+}
+
+.scheduled-ride-date {
+  margin: 0 0 var(--spacing-1) 0;
+  font-weight: 600;
+  font-size: var(--font-size-sm);
+  color: var(--text-primary);
+}
+
+.scheduled-ride-location {
+  margin: 0 0 var(--spacing-2) 0;
+  color: var(--text-secondary);
+  font-size: var(--font-size-xs);
+}
+
+.scheduled-ride-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+}
+
+.scheduled-ride-fare {
+  margin: 0;
+  font-weight: 700;
+  font-size: var(--font-size-sm);
+  color: var(--color-primary);
+}
+
+.scheduled-badge {
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  text-transform: uppercase;
+}
+
+.badge-confirmed {
+  background-color: var(--accent-success-subtle);
+  color: var(--color-success);
+}
+
+.badge-cancelled {
+  background-color: var(--accent-danger-subtle);
+  color: var(--color-danger);
+}
+
+.badge-pending {
+  background-color: var(--accent-warning-subtle);
+  color: var(--color-warning);
+}
+
+.schedule-empty-state {
+  text-align: center;
+  padding: var(--spacing-8);
+  background-color: var(--bg-elevated);
+  border: 1px dashed var(--border-color);
+  border-radius: var(--radius-xl);
+}
+
+.schedule-empty-state p {
+  margin: 0 0 var(--spacing-4) 0;
+  color: var(--text-secondary);
+  font-size: var(--font-size-base);
+}
+
+.alert-message {
+  padding: var(--spacing-3) var(--spacing-4);
+  border-radius: var(--radius-lg);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  margin-bottom: var(--spacing-4);
+}
+
+.alert-success {
+  background-color: var(--accent-success-subtle);
+  color: var(--color-success);
+  border: 1px solid var(--color-success-light);
+}
+
+.alert-error {
+  background-color: var(--accent-danger-subtle);
+  color: var(--color-danger);
+  border: 1px solid var(--color-danger-light);
+}
+
+@media (max-width: 600px) {
+  .scheduled-booking-page {
+    padding: var(--spacing-3);
+  }
+  .schedule-grid-2 {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .scheduled-ride-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .scheduled-ride-card button {
+    width: 100%;
+  }
+}

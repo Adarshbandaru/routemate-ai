@@ -204,7 +204,7 @@ export default function ArchitectureView() {
           <div className="card-header">
             <span className="card-title">Admissibility Gate Formal Specifications</span>
           </div>
-          <div className="card-body" style={{ padding: 0 }}>
+          <div className="card-body" style={{ padding: 0, overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
             <table className="data-table">
               <thead>
                 <tr>

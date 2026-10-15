@@ -46,7 +46,7 @@ export default function FeasibilityMatrix({ results, selectedDriver, onSelectDri
           ))}
         </div>
       </div>
-      <div className="card-body" style={{ padding: 0, maxHeight: '520px', overflowY: 'auto' }}>
+      <div className="card-body" style={{ padding: 0, maxHeight: '520px', overflow: 'auto', WebkitOverflowScrolling: 'touch' }}>
         <table className="data-table">
           <thead>
             <tr>

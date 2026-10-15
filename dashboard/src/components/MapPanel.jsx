@@ -87,7 +87,7 @@ export default function MapPanel({
   const staticLayersRef = useRef([]);
   const movingMarkersRef = useRef(new Map()); // id -> { marker, profile, lastAngle, trailPolyline }
   const [tileError, setTileError] = useState(false);
-  const [basemapType, setBasemapType] = useState('google_roadmap');
+  const [basemapType, setBasemapType] = useState('esri_light');
   const [mapReady, setMapReady] = useState(false);
 
   // Initialize Map

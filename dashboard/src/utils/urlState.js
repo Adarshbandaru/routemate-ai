@@ -6,6 +6,16 @@
 
 export const VALID_ROUTES = [
   'ride',
+  'driver',
+  'driver/auth',
+  'driver/dashboard',
+  'driver/active-ride',
+  'driver/earnings',
+  'driver/profile',
+  'scheduled',
+  'history',
+  'receipt',
+  'wallet',
   'demo',
   'playground',
   'batch',
@@ -19,15 +29,24 @@ export function parseHashState(hashString = window?.location?.hash || '') {
   const clean = hashString.startsWith('#') ? hashString.slice(1) : hashString;
   const [routePart, queryPart] = clean.split('?');
 
-  const routeName = (routePart || '').replace(/^\//, '').toLowerCase();
-  const route = VALID_ROUTES.includes(routeName) ? routeName : 'demo';
-
+  const rawRouteName = (routePart || '').replace(/^\//, '').toLowerCase();
+  
   const params = {};
   if (queryPart) {
     const searchParams = new URLSearchParams(queryPart);
     for (const [key, val] of searchParams.entries()) {
       params[key] = val;
     }
+  }
+
+  // Handle parameterized routes like receipt/:bookingId
+  let route = rawRouteName;
+  if (rawRouteName.startsWith('receipt/')) {
+    const bookingId = rawRouteName.slice('receipt/'.length);
+    route = 'receipt';
+    params.bookingId = bookingId;
+  } else if (!VALID_ROUTES.includes(rawRouteName)) {
+    route = 'demo';
   }
 
   return { route, params };

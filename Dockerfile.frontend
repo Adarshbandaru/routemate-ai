@@ -1,0 +1,37 @@
+# RouteMate AI — Frontend Production Dockerfile (Phase 4)
+# Multi-stage Node + Nginx Alpine static serving
+
+# Build Stage
+FROM node:20-alpine AS builder
+
+WORKDIR /app
+COPY dashboard/package*.json ./
+RUN npm ci
+
+COPY dashboard/ ./
+RUN npm run build
+
+# Static Serving Stage
+FROM nginx:alpine
+
+# Remove default nginx config
+RUN rm /etc/nginx/conf.d/default.conf
+
+# Add custom SPA Nginx config with gzip compression & security headers
+RUN echo 'server {' > /etc/nginx/conf.d/default.conf && \
+    echo '  listen 80;' >> /etc/nginx/conf.d/default.conf && \
+    echo '  server_name localhost;' >> /etc/nginx/conf.d/default.conf && \
+    echo '  root /usr/share/nginx/html;' >> /etc/nginx/conf.d/default.conf && \
+    echo '  index index.html;' >> /etc/nginx/conf.d/default.conf && \
+    echo '  gzip on;' >> /etc/nginx/conf.d/default.conf && \
+    echo '  gzip_types text/plain text/css application/json application/javascript text/xml application/xml image/svg+xml;' >> /etc/nginx/conf.d/default.conf && \
+    echo '  location / {' >> /etc/nginx/conf.d/default.conf && \
+    echo '    try_files $uri $uri/ /index.html;' >> /etc/nginx/conf.d/default.conf && \
+    echo '  }' >> /etc/nginx/conf.d/default.conf && \
+    echo '}' >> /etc/nginx/conf.d/default.conf
+
+COPY --from=builder /app/dist /usr/share/nginx/html
+
+EXPOSE 80
+
+CMD ["nginx", "-g", "daemon off;"]

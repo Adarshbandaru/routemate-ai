@@ -1,0 +1,26 @@
+# Version Control & IDE
+.git
+.gitignore
+.agents
+.gemini
+.vscode
+.idea
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+
+# Node / Frontend
+dashboard/node_modules/
+dashboard/dist/
+npm-debug.log*
+
+# Database & Runtime Logs
+*.log
+backend/routemate.db-journal

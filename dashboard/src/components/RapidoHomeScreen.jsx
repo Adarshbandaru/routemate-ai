@@ -7,7 +7,9 @@ import {
   interpolateAlongPolyline,
 } from '../lib/vehicleAnimation';
 
-const BACKEND_URL = 'http://127.0.0.1:8000';
+const BACKEND_URL =
+  (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_BASE_URL) ||
+  'http://127.0.0.1:8000';
 
 function getVehicleIconSvg(vehicleType = 'sedan', color = '#FF6B35') {
   if (vehicleType === 'bike') {
@@ -179,11 +181,10 @@ export default function RapidoHomeScreen({ onSwitchToConsole }) {
         attributionControl: true,
       }).setView([31.2536, 75.7037], 11);
 
-      // Add Carto Dark tiles
-      L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-        attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
-        subdomains: 'abcd',
-        maxZoom: 19,
+      // Add clean Warm Canvas tile layer (no API key watermark)
+      L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
+        attribution: '&copy; Esri, DeLorme, NAVTEQ',
+        maxZoom: 16,
       }).addTo(map);
 
       // Add Zoom Control at top-left

@@ -797,7 +797,7 @@ export default function ExperimentExplorer({ initialExp = '001_baseline' }) {
         <div className="card-header">
           <span className="card-title">Cross-Experiment Meta-Benchmark Summary</span>
         </div>
-        <div className="card-body">
+        <div className="card-body" style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
           <table className="data-table">
             <thead>
               <tr>
