@@ -32,6 +32,25 @@ def perform_backup(
 ) -> dict:
     """Creates a point-in-time snapshot of the database using sqlite3.backup()."""
     if not db_path.exists():
+        logger.info("Database not found at %s. Initializing schema before backup...", db_path)
+        try:
+            if db_path == DEFAULT_DB_PATH:
+                from backend.app.core.database import init_db
+                init_db()
+            else:
+                db_path.parent.mkdir(parents=True, exist_ok=True)
+                conn = sqlite3.connect(str(db_path))
+                conn.execute("CREATE TABLE IF NOT EXISTS schema_init (id INTEGER PRIMARY KEY);")
+                conn.commit()
+                conn.close()
+        except Exception:
+            db_path.parent.mkdir(parents=True, exist_ok=True)
+            conn = sqlite3.connect(str(db_path))
+            conn.execute("CREATE TABLE IF NOT EXISTS schema_init (id INTEGER PRIMARY KEY);")
+            conn.commit()
+            conn.close()
+
+    if not db_path.exists():
         logger.error("Source database does not exist at %s", db_path)
         return {"success": False, "error": f"Source database not found at {db_path}"}
 
