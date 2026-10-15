@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import L from 'leaflet';
 import { coordToLL } from '../data';
+import { createBaseTileLayer } from '../utils/mapTiles';
 
 const COLORS = {
   rider: '#3b82f6',
@@ -114,13 +115,9 @@ export default function RouteMap({
       mapInstanceRef.current = L.map(mapRef.current, {
         zoomControl: true,
         attributionControl: true,
-      }).setView([37.7749, -122.4194], 13);
+      }).setView([31.2536, 75.7037], 12);
 
-      L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-        attribution: '&copy; OpenStreetMap &copy; CARTO',
-        subdomains: 'abcd',
-        maxZoom: 19,
-      }).addTo(mapInstanceRef.current);
+      createBaseTileLayer('google_roadmap').addTo(mapInstanceRef.current);
     }
 
     const map = mapInstanceRef.current;

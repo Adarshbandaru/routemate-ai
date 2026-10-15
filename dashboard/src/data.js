@@ -28,16 +28,20 @@ function seededRng(label) {
 }
 
 function coordFromKm(x, y) {
-  return { latitude: y / 111.195, longitude: x / 111.195 };
+  // Accurate longitude degree scaling at ~31.25 deg North latitude
+  const cosLat = Math.cos((31.2536 * Math.PI) / 180);
+  return { latitude: y / 111.195, longitude: x / (111.195 * cosLat) };
 }
 
-export const SF_ANCHOR = { latitude: 37.7749, longitude: -122.4194 };
+// Punjab Corridor Anchor: Lovely Professional University (LPU), Phagwara, Punjab
+export const PUNJAB_ANCHOR = { latitude: 31.2536, longitude: 75.7037 };
+export const SF_ANCHOR = PUNJAB_ANCHOR; // Backwards-compatible alias
 
-export function coordToLL(c, projectToSF = true) {
-  if (!c) return [37.7749, -122.4194];
-  if (projectToSF) {
+export function coordToLL(c, projectToCorridor = true) {
+  if (!c) return [PUNJAB_ANCHOR.latitude, PUNJAB_ANCHOR.longitude];
+  if (projectToCorridor) {
     if (Math.abs(c.latitude) > 20) return [c.latitude, c.longitude];
-    return [c.latitude + SF_ANCHOR.latitude, c.longitude + SF_ANCHOR.longitude];
+    return [c.latitude + PUNJAB_ANCHOR.latitude, c.longitude + PUNJAB_ANCHOR.longitude];
   }
   return [c.latitude, c.longitude];
 }
@@ -790,44 +794,44 @@ export async function callDispatchSimAPI(baseUrl, options = {}) {
 
 export const DEMO_RIDE_PRESETS = [
   {
-    id: 'fidi_soma',
-    title: 'Financial District to SoMa Commute',
-    subtitle: 'High density peak hour tech corridor',
-    start: { latitude: 0.002, longitude: 0.005 },
-    destination: { latitude: -0.003, longitude: 0.045 },
+    id: 'lpu_commute',
+    title: 'LPU Evening Commute',
+    subtitle: 'Jalandhar Station → LPU Campus (~21 km)',
+    start: { latitude: 31.3260, longitude: 75.5762 },
+    destination: { latitude: 31.2536, longitude: 75.7037 },
     seats_requested: 1,
     departure: '2026-10-09T08:30:00Z',
-    notes: 'Standard single commuter request during morning peak.',
+    notes: 'Students and staff commuting along GT Road; single rider, moderate traffic, high pooling potential.',
   },
   {
-    id: 'mission_transit',
-    title: 'Mission Bay Transit Hub Link',
-    subtitle: 'Multi-seat shared pooling trip',
-    start: { latitude: -0.005, longitude: 0.012 },
-    destination: { latitude: 0.001, longitude: 0.052 },
+    id: 'campus_shuttle',
+    title: 'Campus Shuttle Rush',
+    subtitle: 'LPU Campus → Phagwara → Ludhiana Station (~42 km)',
+    start: { latitude: 31.2536, longitude: 75.7037 },
+    destination: { latitude: 30.9010, longitude: 75.8573 },
     seats_requested: 2,
-    departure: '2026-10-09T08:35:00Z',
-    notes: '2-seat party requesting shared ride near Caltrain depot.',
+    departure: '2026-10-09T17:15:00Z',
+    notes: 'Evening campus rush; high pooling demand toward Phagwara Bus Stand & Ludhiana, tight capacity, 2-seat party.',
   },
   {
-    id: 'embarcadero_ferry',
-    title: 'Embarcadero Ferry to Market St',
-    subtitle: 'Corridor connection with strict time window',
-    start: { latitude: 0.008, longitude: 0.002 },
-    destination: { latitude: -0.001, longitude: 0.038 },
+    id: 'industrial_delivery',
+    title: 'Industrial Delivery (Ludhiana)',
+    subtitle: 'Ludhiana Industrial Area → Phagwara Hub (~38 km)',
+    start: { latitude: 30.8850, longitude: 75.8900 },
+    destination: { latitude: 31.2240, longitude: 75.7708 },
     seats_requested: 1,
-    departure: '2026-10-09T08:40:00Z',
-    notes: 'Ferry arrival needing fast connection to Mid-Market offices.',
+    departure: '2026-10-09T14:00:00Z',
+    notes: 'Commercial delivery trip with scheduled pickup window, strict detour limit, and verified vehicle checks.',
   },
   {
-    id: 'cross_town_express',
-    title: 'Presidio Express to Downtown',
-    subtitle: 'Longer detour sensitivity stress test',
-    start: { latitude: 0.012, longitude: -0.005 },
-    destination: { latitude: -0.008, longitude: 0.065 },
+    id: 'phagwara_gridlock',
+    title: 'Stress Test (Phagwara Gridlock)',
+    subtitle: 'LPU → Jalandhar with Simulated GT Road Bottleneck (~21 km)',
+    start: { latitude: 31.2536, longitude: 75.7037 },
+    destination: { latitude: 31.3260, longitude: 75.5762 },
     seats_requested: 1,
-    departure: '2026-10-09T08:45:00Z',
-    notes: 'Cross-corridor request testing detour thresholding.',
+    departure: '2026-10-09T18:30:00Z',
+    notes: 'Simulated NH1 / GT Road closure near Rama Mandi; evaluates online incident recourse and sub-5ms rerouting.',
   },
 ];
 
@@ -1159,23 +1163,24 @@ export const EXPERIMENT_DATA = {
 };
 
 /* =============================================
-   PREDICTIVE FLEET REBALANCING TRANSIT ZONES
+   PREDICTIVE FLEET REBALANCING TRANSIT ZONES (PUNJAB CORRIDOR)
    ============================================= */
 
-export const SF_TRANSIT_ZONES = [
-  { zone_id: 'Z1_fidi', name: 'Financial District', coordinate: { latitude: 37.7892, longitude: -122.4014 }, radius_km: 0.8, base_demand: 18 },
-  { zone_id: 'Z2_soma', name: 'SoMa / Moscone Hub', coordinate: { latitude: 37.7833, longitude: -122.4031 }, radius_km: 1.0, base_demand: 22 },
-  { zone_id: 'Z3_caltrain', name: 'Mission Bay / Caltrain', coordinate: { latitude: 37.7766, longitude: -122.3949 }, radius_km: 1.2, base_demand: 25 },
-  { zone_id: 'Z4_civic', name: 'Civic Center / Mid-Market', coordinate: { latitude: 37.7763, longitude: -122.4172 }, radius_km: 0.9, base_demand: 14 },
-  { zone_id: 'Z5_mission', name: 'Mission District Arterial', coordinate: { latitude: 37.7650, longitude: -122.4197 }, radius_km: 1.4, base_demand: 16 },
+export const PUNJAB_TRANSIT_ZONES = [
+  { zone_id: 'Z1_lpu', name: 'LPU Campus Central Hub', coordinate: { latitude: 31.2536, longitude: 75.7037 }, radius_km: 1.8, base_demand: 32 },
+  { zone_id: 'Z2_jalandhar', name: 'Jalandhar City Center & Station', coordinate: { latitude: 31.3260, longitude: 75.5762 }, radius_km: 2.2, base_demand: 28 },
+  { zone_id: 'Z3_phagwara', name: 'Phagwara Bus Stand & GT Spine', coordinate: { latitude: 31.2240, longitude: 75.7708 }, radius_km: 1.5, base_demand: 22 },
+  { zone_id: 'Z4_ludhiana', name: 'Ludhiana Industrial Core', coordinate: { latitude: 30.9010, longitude: 75.8573 }, radius_km: 3.0, base_demand: 36 },
+  { zone_id: 'Z5_ramamandi', name: 'Rama Mandi Transit Junction', coordinate: { latitude: 31.3060, longitude: 75.6120 }, radius_km: 1.4, base_demand: 18 },
 ];
+export const SF_TRANSIT_ZONES = PUNJAB_TRANSIT_ZONES; // Backwards-compatible alias
 
 export function runFleetRebalancingSimulation(idleCount = 20, regime = 'evening_peak') {
   const mults = regime === 'morning_peak'
-    ? { Z1_fidi: 1.8, Z2_soma: 1.6, Z3_caltrain: 0.8, Z4_civic: 0.7, Z5_mission: 0.5 }
+    ? { Z1_lpu: 1.9, Z2_jalandhar: 1.5, Z3_phagwara: 1.1, Z4_ludhiana: 0.8, Z5_ramamandi: 1.2 }
     : regime === 'evening_peak'
-    ? { Z1_fidi: 0.5, Z2_soma: 1.3, Z3_caltrain: 2.0, Z4_civic: 0.8, Z5_mission: 1.2 }
-    : { Z1_fidi: 1.0, Z2_soma: 1.0, Z3_caltrain: 1.0, Z4_civic: 1.0, Z5_mission: 1.0 };
+    ? { Z1_lpu: 0.6, Z2_jalandhar: 1.4, Z3_phagwara: 1.8, Z4_ludhiana: 2.1, Z5_ramamandi: 1.3 }
+    : { Z1_lpu: 1.0, Z2_jalandhar: 1.0, Z3_phagwara: 1.0, Z4_ludhiana: 1.0, Z5_ramamandi: 1.0 };
 
   const zoneDemands = SF_TRANSIT_ZONES.map((z) => ({
     ...z,

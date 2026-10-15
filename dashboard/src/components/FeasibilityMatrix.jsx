@@ -11,26 +11,6 @@ const CHECK_KEYS = [
   { key: 'capacity_eligible', label: 'Capacity' },
 ];
 
-const FEATURE_LABELS = {
-  pickup_distance_km: 'Pickup Distance',
-  destination_distance_km: 'Dest Distance',
-  route_similarity: 'Route Similarity',
-  direction_similarity: 'Direction Sim.',
-  detour_km: 'Detour Burden',
-  departure_difference_min: 'Departure Δ',
-  driver_route_km: 'Driver Total Route',
-};
-
-const FEATURE_UNITS = {
-  pickup_distance_km: 'km',
-  destination_distance_km: 'km',
-  route_similarity: '',
-  direction_similarity: '',
-  detour_km: 'km',
-  departure_difference_min: 'min',
-  driver_route_km: 'km',
-};
-
 export default function FeasibilityMatrix({ results, selectedDriver, onSelectDriver }) {
   const [filter, setFilter] = useState('all');
   const [expanded, setExpanded] = useState(null);

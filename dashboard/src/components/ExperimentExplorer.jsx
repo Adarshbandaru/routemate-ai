@@ -1,5 +1,8 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import { EXPERIMENT_DATA, exportToCSV } from '../data';
+import ProvenancePopover from './common/ProvenancePopover';
+import { updateUrlHash } from '../utils/urlState';
+import { Search } from 'lucide-react';
 
 const METRIC_COLORS = {
   precision: 'purple',
@@ -218,18 +221,30 @@ const EXP_CATEGORIES = {
   '014_research_synthesis': 'synthesis',
 };
 
-export default function ExperimentExplorer() {
-  const [activeExp, setActiveExp] = useState('001_baseline');
+export default function ExperimentExplorer({ initialExp = '001_baseline' }) {
+  const [activeExp, setActiveExp] = useState(initialExp);
   const [category, setCategory] = useState('all');
   const [metric, setMetric] = useState('ndcg');
   const [scenario, setScenario] = useState('all');
   const [viewMode, setViewMode] = useState('chart'); // chart | table | heatmap | radar
+  const [searchFilter, setSearchFilter] = useState('');
+
+  // Sync with URL hash
+  useEffect(() => {
+    updateUrlHash('experiments', { exp: activeExp, cat: category !== 'all' ? category : undefined }, true);
+  }, [activeExp, category]);
 
   const exp = EXPERIMENT_DATA[activeExp];
 
   const visibleExpKeys = useMemo(() => {
-    return Object.keys(EXPERIMENT_DATA).filter((k) => category === 'all' || EXP_CATEGORIES[k] === category);
-  }, [category]);
+    return Object.keys(EXPERIMENT_DATA).filter((k) => {
+      if (category !== 'all' && EXP_CATEGORIES[k] !== category) return false;
+      if (!searchFilter.trim()) return true;
+      const q = searchFilter.toLowerCase();
+      const item = EXPERIMENT_DATA[k];
+      return item.name.toLowerCase().includes(q) || item.description.toLowerCase().includes(q) || k.includes(q);
+    });
+  }, [category, searchFilter]);
 
   const scenarios = useMemo(
     () => (exp ? [...new Set(exp.results.map((r) => r.scenario))] : []),
@@ -269,14 +284,41 @@ export default function ExperimentExplorer() {
       <div className="section-header">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '8px' }}>
           <div>
-            <h2 className="section-title">Experiment Explorer</h2>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <h2 className="section-title">Experiment Explorer</h2>
+              <ProvenancePopover experimentId={activeExp} />
+            </div>
             <p className="section-desc">
-              Compare ranking algorithms and routing methods across controlled synthetic benchmarks and OpenStreetMap road network experiments.
+              Audit all 14 checked-in empirical benchmarks across ranking, circuity divergence, scaling, and rolling dispatch.
             </p>
           </div>
-          <span className="badge neutral" style={{ padding: '3px 8px' }}>
-            Controlled Synthetic Benchmarks
-          </span>
+          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+            <div className="search-input-wrapper" style={{ width: '220px' }}>
+              <Search size={14} className="search-icon" />
+              <input
+                type="text"
+                className="form-input search-input"
+                placeholder="Filter experiments..."
+                value={searchFilter}
+                onChange={(e) => setSearchFilter(e.target.value)}
+                style={{ paddingLeft: '28px', height: '32px', fontSize: '0.75rem' }}
+              />
+            </div>
+            <span className="badge neutral" style={{ padding: '4px 8px' }}>
+              All 14 Artifacts
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Regional Generalization Disclosure */}
+      <div className="card" style={{ marginBottom: '14px', background: 'rgba(56, 189, 248, 0.05)', borderColor: 'rgba(56, 189, 248, 0.25)' }}>
+        <div className="card-body" style={{ padding: '10px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
+          <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+            <strong style={{ color: 'var(--accent-primary)' }}>Research Integrity Disclosure:</strong>{' '}
+            Empirical baseline experiments 001–014 are benchmarked on the San Francisco OpenStreetMap road network baseline. Regional deployment in the Punjab corridor (Jalandhar–Phagwara–Ludhiana, LPU Hub) is evaluated via calibrated synthetic corridor scenarios and presets.
+          </div>
+          <span className="badge info">Regional Scope Note</span>
         </div>
       </div>
 

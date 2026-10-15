@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import {
   DEMO_RIDE_PRESETS,
   generateSyntheticScenario,
@@ -6,7 +6,17 @@ import {
   generateBatchScenario,
   runBatchAssignment,
 } from '../data';
-import RouteMap from './RouteMap';
+import MapPanel from './MapPanel';
+import SimulationClockBar from './common/SimulationClockBar';
+import ProvenancePopover from './common/ProvenancePopover';
+import { useSimulationClock } from '../motion/simulationClock';
+import { updateUrlHash } from '../utils/urlState';
+import {
+  ArrowRight,
+  ArrowLeft,
+  RotateCcw,
+  AlertTriangle,
+} from 'lucide-react';
 
 const STEPS = [
   { id: 'request', num: 1, title: 'Request Ingestion', label: 'Trip Intake' },
@@ -17,15 +27,21 @@ const STEPS = [
   { id: 'evidence', num: 6, title: 'Verified Evidence', label: 'Empirical Synthesis' },
 ];
 
-export default function GuidedDemo({ onNavigateTab }) {
-  const [currentStep, setCurrentStep] = useState(0);
-  const [selectedPreset, setSelectedPreset] = useState('fidi_soma');
+export default function GuidedDemo({ initialPreset = 'lpu_commute', initialStep = 0, onNavigateTab }) {
+  const [currentStep, setCurrentStep] = useState(initialStep);
+  const [selectedPreset, setSelectedPreset] = useState(initialPreset);
   const [customSeats, setCustomSeats] = useState(1);
-  const [seed, setSeed] = useState(42);
-  const [driverCount, setDriverCount] = useState(10);
+  const seed = 42;
+  const driverCount = 12;
   const [selectedDriverId, setSelectedDriverId] = useState(null);
+  const [activeFunnelStage, setActiveFunnelStage] = useState(null);
   const [dispatchPolicy, setDispatchPolicy] = useState('event_driven_rolling');
   const [incidentActive, setIncidentActive] = useState(false);
+
+  // Sync step and preset to URL hash
+  useEffect(() => {
+    updateUrlHash('demo', { step: currentStep, preset: selectedPreset }, true);
+  }, [currentStep, selectedPreset]);
 
   const preset = useMemo(
     () => DEMO_RIDE_PRESETS.find((p) => p.id === selectedPreset) || DEMO_RIDE_PRESETS[0],
@@ -56,7 +72,7 @@ export default function GuidedDemo({ onNavigateTab }) {
     const midLon = (rider.start.longitude + rider.destination.longitude) / 2;
     return {
       coordinate: { latitude: midLat + 0.001, longitude: midLon },
-      label: 'Sudden Congestion / Closed Edge (+1.26 km)',
+      label: 'Simulated GT Road (NH1) Bottleneck / Diversion (+3.2 km)',
       detourRoute: [
         rider.start,
         { latitude: midLat + 0.004, longitude: midLon - 0.003 },
@@ -100,6 +116,39 @@ export default function GuidedDemo({ onNavigateTab }) {
     [batchScenario]
   );
 
+  // Simulation Clock for Stage 4–5
+  const simEvents = useMemo(() => [
+    { id: 'ev-dep', time: 5, label: 'Vehicle Departure', type: 'dep' },
+    { id: 'ev-pick', time: 18, label: 'Passenger 1 Pickup', type: 'pickup' },
+    { id: 'ev-ins', time: 32, label: 'In-Flight Active Trip Insertion', type: 'insertion' },
+    { id: 'ev-drop1', time: 48, label: 'Passenger 1 Drop-off', type: 'dropoff' },
+    { id: 'ev-drop2', time: 58, label: 'Passenger 2 Final Drop-off', type: 'dropoff' },
+  ], []);
+
+  const clock = useSimulationClock({
+    durationSeconds: 60,
+    initialSpeed: 1,
+    events: simEvents,
+    autoPlay: false,
+  });
+
+  // Animated moving vehicles on the real route polylines
+  const animatedVehicles = useMemo(() => {
+    if (currentStep < 3) return [];
+    const selectedDriverObj = drivers.find((d) => d.journey_id === (topDriver?.driver_id || drivers[0]?.journey_id));
+    if (!selectedDriverObj) return [];
+
+    return [
+      {
+        id: selectedDriverObj.journey_id,
+        route: selectedDriverObj.route,
+        color: '#06b6d4',
+        kind: 'car',
+        status: clock.currentTime >= 48 ? 'completed' : 'active',
+      },
+    ];
+  }, [currentStep, drivers, topDriver, clock.currentTime]);
+
   const nextStep = useCallback(() => {
     setCurrentStep((s) => Math.min(STEPS.length - 1, s + 1));
   }, []);
@@ -108,728 +157,343 @@ export default function GuidedDemo({ onNavigateTab }) {
     setCurrentStep((s) => Math.max(0, s - 1));
   }, []);
 
+  // Compute funnel counts for Step 2
+  const funnelStages = useMemo(() => {
+    const total = matchResults.stats.total;
+    const directionFailed = matchResults.all.filter((r) => !r.route_direction_compatible).length;
+    const prunedCount = total - directionFailed;
+    const gatedCount = matchResults.stats.eligible_count;
+    const rankedCount = matchResults.stats.eligible_count;
+    const assignedCount = Math.min(1, rankedCount);
+
+    return [
+      { id: 'retrieved', label: 'Retrieved', count: total, desc: 'Spatial corridor ingestion' },
+      { id: 'pruned', label: 'Pruned', count: prunedCount, desc: 'Admissible lower-bound circuity cut' },
+      { id: 'gated', label: 'Gated', count: gatedCount, desc: '8 hard zero-tolerance checks' },
+      { id: 'ranked', label: 'Ranked', count: rankedCount, desc: 'Multi-factor weighted score' },
+      { id: 'assigned', label: 'Assigned', count: assignedCount, desc: 'Optimal driver pairing' },
+    ];
+  }, [matchResults]);
+
   return (
-    <div className="animate-in" id="guided-demo-flow">
-      {/* Workflow Stepper Bar */}
-      <div className="card" style={{ marginBottom: '18px' }}>
-        <div className="card-body" style={{ padding: '12px' }}>
-          <div className="demo-stepper">
-            {STEPS.map((s, idx) => {
-              const isPast = idx < currentStep;
-              const isCurrent = idx === currentStep;
+    <div className="demo-layout animate-in" id="guided-demo-flow">
+      {/* 1. Compact Header */}
+      <div className="demo-header-row">
+        <div className="demo-brand-title">
+          <span className="demo-brand-label">RouteMate AI</span>
+          <span className="demo-brand-sep">|</span>
+          <span className="demo-brand-section">Guided Demo</span>
+        </div>
+        <div className="demo-step-counter">
+          Step {currentStep + 1} of {STEPS.length}: {STEPS[currentStep].title}
+        </div>
+        <div className="demo-header-actions">
+          <button
+            type="button"
+            className="btn btn-ghost btn-xs text-muted"
+            onClick={() => setCurrentStep(0)}
+            title="Reset to Step 1"
+          >
+            <RotateCcw size={13} />
+            <span>Reset</span>
+          </button>
+        </div>
+      </div>
+
+      {/* 2. Step-Specific Controls Bar (Clean, unnested, airy) */}
+      {currentStep === 0 && (
+        <div className="demo-controls-bar">
+          <div className="demo-ctrl-item">
+            <label className="demo-ctrl-label" htmlFor="preset-select">Preset</label>
+            <select
+              id="preset-select"
+              className="demo-select font-mono"
+              value={selectedPreset}
+              onChange={(e) => setSelectedPreset(e.target.value)}
+            >
+              {DEMO_RIDE_PRESETS.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.title}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="demo-ctrl-item">
+            <span className="demo-ctrl-label">Party Size</span>
+            <div className="demo-pill-group">
+              {[1, 2, 3].map((num) => (
+                <button
+                  key={num}
+                  type="button"
+                  className={`demo-pill-btn ${customSeats === num ? 'active' : ''}`}
+                  onClick={() => setCustomSeats(num)}
+                >
+                  {num} {num === 1 ? 'Seat' : 'Seats'}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="demo-ctrl-item" style={{ flex: '1 1 auto', minWidth: '220px' }}>
+            <span className="demo-ctrl-label">Corridor</span>
+            <span className="demo-ctrl-text">
+              <strong>{preset.subtitle}</strong> · <span className="text-muted">{preset.notes}</span>
+            </span>
+          </div>
+        </div>
+      )}
+
+      {currentStep === 1 && (
+        <div className="demo-funnel-bar">
+          <span className="demo-funnel-title">Decision Funnel:</span>
+          <div className="demo-funnel-nodes">
+            {funnelStages.map((stage, idx) => {
+              const isSelected = activeFunnelStage === stage.id;
+              return (
+                <div key={stage.id} className="demo-funnel-node-wrap">
+                  <button
+                    type="button"
+                    className={`demo-funnel-node ${isSelected ? 'active' : ''}`}
+                    onClick={() => setActiveFunnelStage(isSelected ? null : stage.id)}
+                    title={stage.desc}
+                  >
+                    <span className="demo-funnel-node-label">{stage.label}</span>
+                    <span className="demo-funnel-node-count font-mono">({stage.count})</span>
+                  </button>
+                  {idx < funnelStages.length - 1 && (
+                    <span className="demo-funnel-arrow">→</span>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+          {activeFunnelStage && (
+            <button
+              type="button"
+              className="btn btn-ghost btn-xs text-muted"
+              onClick={() => setActiveFunnelStage(null)}
+              style={{ marginLeft: 'auto' }}
+            >
+              Clear Filter
+            </button>
+          )}
+        </div>
+      )}
+
+      {currentStep === 2 && (
+        <div className="demo-controls-bar">
+          <span className="demo-ctrl-label">Top Matches:</span>
+          <div className="demo-candidates-inline">
+            {eligibleDrivers.slice(0, 3).map((cand, idx) => {
+              const isSelected = activeDriver?.driver_id === cand.driver_id;
               return (
                 <button
-                  key={s.id}
-                  className={`demo-step-btn ${isCurrent ? 'active' : ''} ${isPast ? 'completed' : ''}`}
-                  onClick={() => setCurrentStep(idx)}
+                  key={cand.driver_id}
+                  type="button"
+                  className={`demo-candidate-chip ${isSelected ? 'active' : ''}`}
+                  onClick={() => setSelectedDriverId(cand.driver_id)}
                 >
-                  <div className="demo-step-top">
-                    <span className="demo-step-num">0{s.num}</span>
-                    {isPast && <span style={{ color: '#10b981', fontSize: '10px', fontWeight: 700 }}>✓</span>}
-                  </div>
-                  <div className="demo-step-title">{s.title}</div>
-                  <div style={{ fontSize: '10px', color: 'var(--text-muted)' }}>{s.label}</div>
+                  <span className="font-mono font-bold">#{idx + 1} {cand.driver_id}</span>
+                  <span className="badge success font-mono">{cand.score.toFixed(1)}/100</span>
+                  <span className="text-muted text-xs">
+                    Pickup {cand.features.pickup_distance_km.toFixed(1)} km · Detour {cand.features.detour_km.toFixed(1)} km
+                  </span>
                 </button>
               );
             })}
           </div>
         </div>
-      </div>
+      )}
 
-      {/* Step Content */}
-      <div className="demo-step-container">
-        {/* ================= STEP 1: CREATE RIDE REQUEST ================= */}
-        {currentStep === 0 && (
-          <div className="card animate-in">
-            <div className="card-header">
-              <div>
-                <span className="card-title">Step 1 · Commuter Request Ingestion</span>
-                <span style={{ fontSize: '0.725rem', color: 'var(--text-muted)' }}>
-                  Ingest origin, destination coordinates, seat requirements, and departure window
-                </span>
-              </div>
-              <span className="badge info">Intake Stage</span>
-            </div>
-            <div className="card-body">
-              {/* Presets Grid */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '10px', marginBottom: '18px' }}>
-                {DEMO_RIDE_PRESETS.map((p) => {
-                  const isSelected = p.id === selectedPreset;
-                  return (
-                    <div
-                      key={p.id}
-                      className="card"
-                      style={{
-                        padding: '12px 14px',
-                        cursor: 'pointer',
-                        borderColor: isSelected ? 'var(--accent-primary)' : 'var(--border-subtle)',
-                        background: isSelected ? 'var(--bg-active)' : 'var(--bg-card-subtle)',
-                        boxShadow: isSelected ? '0 0 0 1px var(--accent-primary)' : undefined,
-                      }}
-                      onClick={() => setSelectedPreset(p.id)}
-                    >
-                      <div style={{ fontWeight: 600, fontSize: '0.875rem', marginBottom: '2px' }}>{p.title}</div>
-                      <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '4px' }}>{p.subtitle}</div>
-                      <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{p.notes}</div>
-                    </div>
-                  );
-                })}
-              </div>
-
-              {/* Request Parameters Form */}
-              <div style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
-                gap: '14px',
-                background: 'var(--bg-hover)',
-                padding: '14px 16px',
-                borderRadius: 'var(--radius-sm)',
-                border: '1px solid var(--border-subtle)',
-                marginBottom: '18px',
-              }}>
-                <div>
-                  <label className="form-label">Rider Identifier</label>
-                  <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.8125rem', fontWeight: 600, color: '#38bdf8' }}>
-                    {rider.journey_id}
-                  </div>
-                </div>
-                <div>
-                  <label className="form-label">Seats Requested</label>
-                  <div style={{ display: 'flex', gap: '6px' }}>
-                    {[1, 2, 3].map((num) => (
-                      <button
-                        key={num}
-                        className={`btn btn-sm ${customSeats === num ? 'btn-primary' : 'btn-outline'}`}
-                        onClick={() => setCustomSeats(num)}
-                      >
-                        {num} {num === 1 ? 'Seat' : 'Seats'}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                <div>
-                  <label className="form-label">Origin Coordinate</label>
-                  <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.75rem' }}>
-                    {preset.start.latitude.toFixed(4)}, {preset.start.longitude.toFixed(4)}
-                  </div>
-                </div>
-                <div>
-                  <label className="form-label">Destination Coordinate</label>
-                  <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.75rem' }}>
-                    {preset.destination.latitude.toFixed(4)}, {preset.destination.longitude.toFixed(4)}
-                  </div>
-                </div>
-              </div>
-
-              {/* Map Preview of Request */}
-              <div style={{ marginBottom: '18px' }}>
-                <div style={{ fontSize: '0.6875rem', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '6px', letterSpacing: '0.5px', textTransform: 'uppercase' }}>
-                  Commute Route Corridor (San Francisco Metro)
-                </div>
-                <RouteMap rider={rider} height="280px" />
-              </div>
-
-              {/* Bottom Actions */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
-                <div style={{ display: 'flex', gap: '14px', alignItems: 'center', flexWrap: 'wrap' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Seed:</span>
-                    <input
-                      className="form-input"
-                      type="number"
-                      value={seed}
-                      onChange={(e) => setSeed(parseInt(e.target.value, 10) || 0)}
-                      style={{ width: '70px', padding: '3px 6px', fontSize: '0.75rem' }}
-                    />
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Fleet Pool:</span>
-                    <select
-                      className="form-select"
-                      value={driverCount}
-                      onChange={(e) => setDriverCount(parseInt(e.target.value, 10))}
-                      style={{ padding: '3px 6px', fontSize: '0.75rem' }}
-                    >
-                      <option value={6}>6 Candidates</option>
-                      <option value={10}>10 Candidates</option>
-                      <option value={16}>16 Candidates</option>
-                    </select>
-                  </div>
-                </div>
-                <button className="btn btn-primary" onClick={nextStep}>
-                  Proceed to Feasibility Filtering →
-                </button>
-              </div>
-            </div>
+      {currentStep === 3 && (
+        <div className="demo-controls-bar" style={{ justifyContent: 'space-between', flexWrap: 'wrap' }}>
+          <div style={{ flex: '1 1 360px', minWidth: '280px' }}>
+            <SimulationClockBar clock={clock} events={simEvents} title="Route Playback" />
           </div>
-        )}
+          <div className="demo-inline-metrics">
+            <span className="demo-ctrl-label">Solver Bench:</span>
+            <span className="demo-metric-pill">
+              Greedy: <strong>9.3% gap</strong> <span className="text-muted">({greedyBatch.solveMs}ms)</span>
+            </span>
+            <span className="demo-metric-pill">
+              Auction: <strong>4.1% gap</strong> <span className="text-muted">({auctionBatch.solveMs}ms)</span>
+            </span>
+            <span className="demo-metric-pill highlight">
+              Exact B&B: <strong>Optimal</strong> <span className="text-muted">({optimalBatch.solveMs}ms)</span>
+            </span>
+          </div>
+        </div>
+      )}
 
-        {/* ================= STEP 2: FEASIBILITY FILTERING ================= */}
-        {currentStep === 1 && (
-          <div className="card animate-in">
-            <div className="card-header">
-              <div>
-                <span className="card-title">Step 2 · 8-Gate Zero-Tolerance Feasibility Filtering</span>
-                <span style={{ fontSize: '0.725rem', color: 'var(--text-muted)' }}>
-                  Prior to ranking, hard constraints eliminate unverified drivers and incompatible corridors
-                </span>
-              </div>
-              <span className="badge success">{eligibleDrivers.length} / {matchResults.all.length} Eligible</span>
-            </div>
-            <div className="card-body">
-              {/* Matrix of checks */}
-              <div style={{ overflowX: 'auto', marginBottom: '16px' }}>
-                <table className="data-table">
-                  <thead>
-                    <tr>
-                      <th>Driver</th>
-                      <th>Direction</th>
-                      <th>Pickup Dist</th>
-                      <th>Dropoff Dist</th>
-                      <th>Departure Δ</th>
-                      <th>Detour</th>
-                      <th>ID Check</th>
-                      <th>Vehicle Check</th>
-                      <th>Capacity</th>
-                      <th>Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {matchResults.all.slice(0, 8).map((d) => {
-                      const isSelected = activeDriver?.driver_id === d.driver_id;
-                      return (
-                        <tr
-                          key={d.driver_id}
-                          style={{
-                            background: isSelected ? 'var(--bg-active)' : undefined,
-                            cursor: 'pointer',
-                          }}
-                          onClick={() => setSelectedDriverId(d.driver_id)}
-                        >
-                          <td style={{ fontWeight: 600, fontFamily: 'var(--font-mono)' }}>{d.driver_id}</td>
-                          <td>{d.checks.route_direction_compatible ? '✓' : '✕'}</td>
-                          <td>{d.checks.pickup_distance_eligible ? '✓' : '✕'}</td>
-                          <td>{d.checks.destination_distance_eligible ? '✓' : '✕'}</td>
-                          <td>{d.checks.departure_time_eligible ? '✓' : '✕'}</td>
-                          <td>{d.checks.detour_eligible ? '✓' : '✕'}</td>
-                          <td>{d.checks.identity_verification ? '✓' : '✕'}</td>
-                          <td>{d.checks.vehicle_verification ? '✓' : '✕'}</td>
-                          <td>{d.checks.capacity_eligible ? '✓' : '✕'}</td>
-                          <td>
-                            <span className={`badge ${d.final_eligible ? 'success' : 'danger'}`}>
-                              {d.final_eligible ? 'ELIGIBLE' : 'REJECTED'}
-                            </span>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
+      {currentStep === 4 && (
+        <div className="demo-controls-bar" style={{ justifyContent: 'space-between', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+            <label className="demo-ctrl-label" htmlFor="dispatch-policy-select">Policy</label>
+            <select
+              id="dispatch-policy-select"
+              className="demo-select font-mono"
+              value={dispatchPolicy}
+              onChange={(e) => setDispatchPolicy(e.target.value)}
+            >
+              <option value="event_driven_rolling">Event-Driven Rolling (Instant Insertions)</option>
+              <option value="periodic_rolling">Periodic Rolling (30s Window)</option>
+              <option value="static_batch">Static Batching (60s Baseline)</option>
+            </select>
+            <button
+              type="button"
+              className={`btn btn-xs ${incidentActive ? 'btn-danger' : 'btn-outline'}`}
+              onClick={() => setIncidentActive(!incidentActive)}
+            >
+              {incidentActive ? 'Closure Active (Recourse Reroute)' : 'Simulate GT Road Closure'}
+            </button>
+          </div>
+          <div className="demo-inline-metrics font-mono text-xs">
+            <span>Fleet VKT: <strong className="text-cyan">{dispatchPolicy === 'event_driven_rolling' ? '50.45 km (-60.5%)' : dispatchPolicy === 'periodic_rolling' ? '53.34 km (-58.3%)' : '127.78 km'}</strong></span>
+            <span className="demo-sep">·</span>
+            <span>Wait: <strong className="text-amber">{dispatchPolicy === 'event_driven_rolling' ? '102.6s (-39.1%)' : '169.0s'}</strong></span>
+            <span className="demo-sep">·</span>
+            <span>Insertions: <strong className="text-success">{dispatchPolicy === 'event_driven_rolling' ? '36' : dispatchPolicy === 'periodic_rolling' ? '34' : '0'}</strong></span>
+          </div>
+        </div>
+      )}
 
-              {/* Inspector of Selected Driver */}
-              {activeDriver && (
-                <div style={{
-                  background: 'var(--bg-hover)',
-                  padding: '12px 14px',
-                  borderRadius: 'var(--radius-sm)',
+      {/* 3. Hero Leaflet Map (Dominates 70–80% of screen height for Steps 1–5) */}
+      {currentStep < 5 ? (
+        <div className="demo-map-wrap">
+          <MapPanel
+            rider={rider}
+            drivers={drivers}
+            matchResults={matchResults}
+            activeFunnelStage={activeFunnelStage}
+            selectedDriver={activeDriver?.driver_id}
+            onSelectDriver={(id) => setSelectedDriverId(id)}
+            incident={incidentObj}
+            animatedVehicles={animatedVehicles}
+            simulationProgress={clock.progress}
+            height="calc(100vh - 240px)"
+          />
+        </div>
+      ) : (
+        /* Step 6: Verified Empirical Evidence (Linear-style clean audit grid) */
+        <div className="demo-evidence-wrap" style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '12px' }}>
+            {[
+              {
+                expId: '008_road_network_validation',
+                title: 'Exp 008: Road Network Validation',
+                metric: '75.6% False Positive Elimination',
+                desc: 'Euclidean gating misclassifies 34 of 45 pairs. Directed Dijkstra routing corrects top-1 match in 68% of queries.',
+              },
+              {
+                expId: '009_hybrid_pruning',
+                title: 'Exp 009: Hybrid Two-Tier Pruning',
+                metric: '81.78% Pruned · 0 False Negatives',
+                desc: 'Geodesic lower-bound pruning saves 81.78% of expensive routing calls with 100% true feasible recall.',
+              },
+              {
+                expId: '012_dynamic_recourse',
+                title: 'Exp 012: Dynamic Online Recourse',
+                metric: '60% → 100% Feasibility Restored',
+                desc: 'Arterial street closures drop static routes to 60% failure; online A* recourse restores 100% feasibility in 3.42 ms.',
+              },
+              {
+                expId: '013_rolling_dispatch',
+                title: 'Exp 013: Rolling-Horizon Dispatch',
+                metric: '-60.5% Fleet VKT · -39.1% Wait',
+                desc: 'Immediate event triggers and active-trip waypoint insertions prevent vehicle supply bottlenecks.',
+              },
+              {
+                expId: '005_classical_ml',
+                title: 'Exp 005: Supervised ML Benchmark',
+                metric: 'ML Ranker = Heuristic (P@3 0.783)',
+                desc: 'L2 logistic regression did not dominate explainable multi-factor scoring. Preserved as an honest negative result.',
+              },
+              {
+                expId: '007_assignment_scaling',
+                title: 'Exp 007: Assignment Combinatorics',
+                metric: 'Exact Solver Timeout at 40x20',
+                desc: 'Branch & Bound exceeds timeout at scale. Greedy heuristic achieves 9.3% mean gap with 36,000x speedup.',
+              },
+            ].map((item) => (
+              <div
+                key={item.expId}
+                style={{
+                  background: 'var(--bg-card)',
                   border: '1px solid var(--border-subtle)',
-                  marginBottom: '16px',
-                }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                    <div style={{ fontWeight: 600, fontSize: '0.8125rem' }}>
-                      Inspecting Candidate: <span style={{ fontFamily: 'var(--font-mono)', color: '#38bdf8' }}>{activeDriver.driver_id}</span>
-                    </div>
-                    <span className={`badge ${activeDriver.final_eligible ? 'success' : 'danger'}`}>
-                      {activeDriver.final_eligible ? 'PASSED 8/8 HARD GATES' : 'PRUNED BY CONSTRAINTS'}
-                    </span>
-                  </div>
-                  {!activeDriver.final_eligible && activeDriver.rejection_reasons.length > 0 && (
-                    <div style={{ color: '#f87171', fontSize: '0.75rem', marginBottom: '8px', fontFamily: 'var(--font-mono)' }}>
-                      Rejection Causes: {activeDriver.rejection_reasons.join(', ')}
-                    </div>
-                  )}
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '8px', fontSize: '0.75rem' }}>
-                    <div>Pickup Distance: <strong>{activeDriver.features.pickup_distance_km.toFixed(2)} km</strong></div>
-                    <div>Destination Distance: <strong>{activeDriver.features.destination_distance_km.toFixed(2)} km</strong></div>
-                    <div>Insertion Detour: <strong>{activeDriver.features.detour_km.toFixed(2)} km</strong></div>
-                    <div>Direction Match: <strong>{(activeDriver.features.direction_similarity * 100).toFixed(0)}%</strong></div>
-                  </div>
-                </div>
-              )}
-
-              {/* Map of Compatibility */}
-              <div style={{ marginBottom: '18px' }}>
+                  borderRadius: 'var(--radius-sm)',
+                  padding: '14px 16px',
+                  borderLeft: '3px solid var(--accent-primary)',
+                }}
+              >
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                  <div style={{ fontSize: '0.6875rem', fontWeight: 600, color: 'var(--text-muted)', letterSpacing: '0.5px', textTransform: 'uppercase' }}>
-                    Corridor Compatibility Overlay (Click row above to highlight)
-                  </div>
-                  <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>
-                    Active: <code style={{ color: '#0ea5e9' }}>{activeDriver?.driver_id}</code>
-                  </span>
+                  <span style={{ fontWeight: 600, fontSize: '0.8125rem' }}>{item.title}</span>
+                  <ProvenancePopover experimentId={item.expId} />
                 </div>
-                <RouteMap
-                  rider={rider}
-                  drivers={drivers}
-                  matchResults={matchResults}
-                  selectedDriver={activeDriver?.driver_id}
-                  onSelectDriver={(id) => setSelectedDriverId(id)}
-                  height="300px"
-                />
+                <div className="font-mono text-success" style={{ fontWeight: 700, fontSize: '0.95rem', marginBottom: '6px' }}>
+                  {item.metric}
+                </div>
+                <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', lineHeight: 1.4 }}>{item.desc}</p>
               </div>
-
-              {/* Navigation */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <button className="btn btn-outline" onClick={prevStep}>← Back</button>
-                <button className="btn btn-primary" onClick={nextStep}>
-                  Proceed to Explainable Scoring →
-                </button>
-              </div>
-            </div>
+            ))}
           </div>
-        )}
 
-        {/* ================= STEP 3: EXPLAINABLE SCORING ================= */}
-        {currentStep === 2 && (
-          <div className="card animate-in">
-            <div className="card-header">
-              <div>
-                <span className="card-title">Step 3 · Explainable Multi-Factor Ranking</span>
-                <span style={{ fontSize: '0.725rem', color: 'var(--text-muted)' }}>
-                  Eligible candidates scored via calibrated weights rewarding overlap and penalizing passenger detour
-                </span>
-              </div>
-              <span className="badge info">Ranking Engine</span>
+          <div
+            style={{
+              background: 'var(--bg-card)',
+              border: '1px solid var(--border-subtle)',
+              borderRadius: 'var(--radius-sm)',
+              padding: '12px 16px',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+              <AlertTriangle size={15} className="text-amber" />
+              <span className="font-semibold" style={{ fontSize: '0.8125rem' }}>Research Integrity & Domain Boundaries</span>
             </div>
-            <div className="card-body">
-              {/* Ranking Leaderboard */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '14px', marginBottom: '18px' }}>
-                <div>
-                  <div style={{ fontSize: '0.6875rem', fontWeight: 600, marginBottom: '8px', color: 'var(--text-muted)', textTransform: 'uppercase' }}>
-                    Ranked Candidates (Top-K)
-                  </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                    {eligibleDrivers.slice(0, 5).map((d, rank) => {
-                      const isSelected = activeDriver?.driver_id === d.driver_id;
-                      return (
-                        <div
-                          key={d.driver_id}
-                          className="card"
-                          style={{
-                            padding: '10px 12px',
-                            cursor: 'pointer',
-                            borderColor: isSelected ? 'var(--accent-primary)' : 'var(--border-subtle)',
-                            background: isSelected ? 'var(--bg-active)' : 'var(--bg-card-subtle)',
-                          }}
-                          onClick={() => setSelectedDriverId(d.driver_id)}
-                        >
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2px' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                              <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 700, color: rank === 0 ? '#10b981' : 'var(--text-muted)' }}>
-                                #{rank + 1}
-                              </span>
-                              <span style={{ fontWeight: 600, fontFamily: 'var(--font-mono)', fontSize: '0.8125rem' }}>{d.driver_id}</span>
-                            </div>
-                            <span style={{ fontWeight: 700, color: '#34d399', fontSize: '0.875rem', fontFamily: 'var(--font-mono)' }}>
-                              {d.score.toFixed(1)} <span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>pts</span>
-                            </span>
-                          </div>
-                          <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>
-                            Detour: {d.features.detour_km.toFixed(2)} km · Direction: {(d.features.direction_similarity * 100).toFixed(0)}%
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                {/* Score Breakdown Attribution */}
-                {activeDriver && (
-                  <div style={{ background: 'var(--bg-hover)', padding: '14px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-subtle)' }}>
-                    <div style={{ fontSize: '0.6875rem', fontWeight: 600, marginBottom: '10px', color: 'var(--text-muted)', textTransform: 'uppercase' }}>
-                      Factor Attribution · {activeDriver.driver_id}
-                    </div>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                      {[
-                        { label: 'Corridor Direction Match', val: activeDriver.features.direction_similarity * 40, max: 40, color: '#10b981' },
-                        { label: 'Route Overlap Density', val: activeDriver.features.route_similarity * 30, max: 30, color: '#0ea5e9' },
-                        { label: 'Proximity (Low Pickup Dist)', val: Math.max(0, 20 - activeDriver.features.pickup_distance_km * 4), max: 20, color: '#6366f1' },
-                        { label: 'Detour Burden Penalty', val: Math.max(0, 15 - activeDriver.features.detour_km * 3), max: 15, color: '#f59e0b' },
-                      ].map((item) => (
-                        <div key={item.label}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', marginBottom: '3px' }}>
-                            <span>{item.label}</span>
-                            <span style={{ fontWeight: 600, color: item.color, fontFamily: 'var(--font-mono)' }}>
-                              +{item.val.toFixed(1)} / {item.max}
-                            </span>
-                          </div>
-                          <div className="bar-track" style={{ height: '5px' }}>
-                            <div
-                              style={{
-                                width: `${Math.min(100, (item.val / item.max) * 100)}%`,
-                                height: '100%',
-                                background: item.color,
-                                borderRadius: '2px',
-                              }}
-                            />
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                    <div style={{ marginTop: '12px', padding: '8px 10px', background: 'var(--accent-success-subtle)', borderRadius: 'var(--radius-xs)', fontSize: '0.725rem', color: '#34d399' }}>
-                      Candidate meets all compliance criteria with minimal passenger detour penalty.
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Map of Ranked Routes */}
-              <div style={{ marginBottom: '18px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                  <div style={{ fontSize: '0.6875rem', fontWeight: 600, color: 'var(--text-muted)', letterSpacing: '0.5px', textTransform: 'uppercase' }}>
-                    Ranked Corridors Geographic View
-                  </div>
-                  <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>
-                    Inspecting: <code style={{ color: '#10b981' }}>{activeDriver?.driver_id}</code> ({activeDriver?.score?.toFixed(1)} pts)
-                  </span>
-                </div>
-                <RouteMap
-                  rider={rider}
-                  drivers={eligibleDrivers.map((e) => drivers.find((d) => d.journey_id === e.driver_id)).filter(Boolean)}
-                  matchResults={matchResults}
-                  selectedDriver={activeDriver?.driver_id}
-                  onSelectDriver={(id) => setSelectedDriverId(id)}
-                  height="300px"
-                />
-              </div>
-
-              {/* Navigation */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <button className="btn btn-outline" onClick={prevStep}>← Back</button>
-                <button className="btn btn-primary" onClick={nextStep}>
-                  Proceed to Fleet Batch Assignment →
-                </button>
-              </div>
-            </div>
+            <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+              Baseline experiments (001–014) are verified on OpenStreetMap street networks and calibrated synthetic corridors.
+              Travel times derive from BPR speed-flow volume delay curves and Dijkstra shortest paths. Core algorithmic models optimize passenger cars; micromobility sprites are illustrative.
+            </p>
           </div>
-        )}
+        </div>
+      )}
 
-        {/* ================= STEP 4: BATCH ASSIGNMENT ================= */}
-        {currentStep === 3 && (
-          <div className="card animate-in">
-            <div className="card-header">
-              <div>
-                <span className="card-title">Step 4 · Combinatorial Fleet Batch Assignment</span>
-                <span style={{ fontSize: '0.725rem', color: 'var(--text-muted)' }}>
-                  Group concurrent passenger demands into multi-rider vehicle pools honoring capacities and detour limits
-                </span>
-              </div>
-              <span className="badge success">Fleet Optimization</span>
-            </div>
-            <div className="card-body">
-              {/* Comparison table */}
-              <div style={{ overflowX: 'auto', marginBottom: '18px' }}>
-                <table className="data-table">
-                  <thead>
-                    <tr>
-                      <th>Algorithm</th>
-                      <th>Matched Riders</th>
-                      <th>Active Vehicles</th>
-                      <th>Objective Score</th>
-                      <th>Optimality Gap</th>
-                      <th>Solve Latency</th>
-                      <th>Role</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td style={{ fontWeight: 600 }}>Greedy Heuristic</td>
-                      <td>{greedyBatch.matchedRiders} / 6</td>
-                      <td>{greedyBatch.matchedDrivers}</td>
-                      <td style={{ fontWeight: 600, fontFamily: 'var(--font-mono)' }}>{greedyBatch.objectiveValue.toFixed(1)}</td>
-                      <td style={{ color: '#fbbf24', fontFamily: 'var(--font-mono)' }}>
-                        {(((optimalBatch.objectiveValue - greedyBatch.objectiveValue) / (optimalBatch.objectiveValue || 1)) * 100).toFixed(1)}%
-                      </td>
-                      <td style={{ fontFamily: 'var(--font-mono)' }}>{greedyBatch.solveMs} ms</td>
-                      <td><span className="badge info">Ultra-Fast Rolling (&lt;1ms)</span></td>
-                    </tr>
-                    <tr>
-                      <td style={{ fontWeight: 600 }}>Auction-Swap</td>
-                      <td>{auctionBatch.matchedRiders} / 6</td>
-                      <td>{auctionBatch.matchedDrivers}</td>
-                      <td style={{ fontWeight: 600, fontFamily: 'var(--font-mono)' }}>{auctionBatch.objectiveValue.toFixed(1)}</td>
-                      <td style={{ color: '#fbbf24', fontFamily: 'var(--font-mono)' }}>
-                        {(((optimalBatch.objectiveValue - auctionBatch.objectiveValue) / (optimalBatch.objectiveValue || 1)) * 100).toFixed(1)}%
-                      </td>
-                      <td style={{ fontFamily: 'var(--font-mono)' }}>{auctionBatch.solveMs} ms</td>
-                      <td><span className="badge info">Local Search Improvement</span></td>
-                    </tr>
-                    <tr style={{ background: 'var(--accent-success-subtle)' }}>
-                      <td style={{ fontWeight: 700, color: '#34d399' }}>Exact Branch & Bound</td>
-                      <td>{optimalBatch.matchedRiders} / 6</td>
-                      <td>{optimalBatch.matchedDrivers}</td>
-                      <td style={{ fontWeight: 700, color: '#34d399', fontFamily: 'var(--font-mono)' }}>{optimalBatch.objectiveValue.toFixed(1)}</td>
-                      <td style={{ fontWeight: 700, color: '#34d399', fontFamily: 'var(--font-mono)' }}>0.0% (Optimal)</td>
-                      <td style={{ fontFamily: 'var(--font-mono)' }}>{optimalBatch.solveMs} ms</td>
-                      <td><span className="badge success">Ground Truth Benchmark</span></td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
+      {/* 4. Action Footer (Airy, clean, unnested) */}
+      <div className="demo-actions-footer">
+        <div>
+          {currentStep > 0 && (
+            <button type="button" className="btn btn-outline btn-sm" onClick={prevStep}>
+              <ArrowLeft size={14} />
+              <span>Back</span>
+            </button>
+          )}
+        </div>
 
-              {/* Formed vehicle pools */}
-              <div style={{ marginBottom: '18px' }}>
-                <div style={{ fontSize: '0.6875rem', fontWeight: 600, marginBottom: '8px', color: 'var(--text-muted)', textTransform: 'uppercase' }}>
-                  Formed High-Occupancy Pools (Greedy Method)
-                </div>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '10px' }}>
-                  {greedyBatch.groups.map((g) => (
-                    <div key={g.driver_id} className="card" style={{ padding: '10px 12px', borderLeft: '3px solid #0ea5e9' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-                        <span style={{ fontWeight: 600, fontSize: '0.8125rem', fontFamily: 'var(--font-mono)' }}>{g.driver_id}</span>
-                        <span className="badge success">Score: {g.groupScore.toFixed(1)}</span>
-                      </div>
-                      <div style={{ fontSize: '0.725rem', color: 'var(--text-secondary)', marginBottom: '4px' }}>
-                        Seats Used: <strong>{g.seatsUsed}</strong> · Remaining: <strong>{g.remainingCapacity}</strong>
-                      </div>
-                      <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
-                        {g.rider_ids.map((rid) => (
-                          <span key={rid} className="badge neutral" style={{ fontSize: '9px', padding: '1px 5px' }}>
-                            {rid}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Navigation */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <button className="btn btn-outline" onClick={prevStep}>← Back</button>
-                <button className="btn btn-primary" onClick={nextStep}>
-                  Proceed to Dispatch Strategies →
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* ================= STEP 5: DISPATCH COMPARISON ================= */}
-        {currentStep === 4 && (
-          <div className="card animate-in">
-            <div className="card-header">
-              <div>
-                <span className="card-title">Step 5 · Rolling-Horizon Dispatch vs Static Batching</span>
-                <span style={{ fontSize: '0.725rem', color: 'var(--text-muted)' }}>
-                  Evaluate dynamic in-flight waypoint insertions against conventional batch quantization windows
-                </span>
-              </div>
-              <span className="badge info">Exp 013 Benchmark</span>
-            </div>
-            <div className="card-body">
-              {/* Policy Selector Buttons */}
-              <div style={{ display: 'flex', gap: '8px', marginBottom: '16px', flexWrap: 'wrap' }}>
-                {[
-                  { id: 'static_batch', label: 'Static Batching (60s)', desc: 'Idle fleet only, fixed window' },
-                  { id: 'periodic_rolling', label: 'Periodic Rolling (30s)', desc: 'Active trip insertions every 30s' },
-                  { id: 'event_driven_rolling', label: 'Event-Driven Rolling (Instant)', desc: 'Immediate replan on arrivals' },
-                ].map((pol) => {
-                  const isSel = dispatchPolicy === pol.id;
-                  return (
-                    <button
-                      key={pol.id}
-                      className={`btn ${isSel ? 'btn-primary' : 'btn-outline'}`}
-                      style={{ padding: '8px 12px', textAlign: 'left' }}
-                      onClick={() => setDispatchPolicy(pol.id)}
-                    >
-                      <div style={{ fontWeight: 600 }}>{pol.label}</div>
-                      <div style={{ fontSize: '0.6875rem', opacity: 0.8 }}>{pol.desc}</div>
-                    </button>
-                  );
-                })}
-              </div>
-
-              {/* Telemetry Cards */}
-              <div className="stats-grid" style={{ marginBottom: '18px' }}>
-                <div className="stat-card cyan">
-                  <div className="stat-label">Fleet Mileage (VKT)</div>
-                  <div className="stat-value cyan">
-                    {dispatchPolicy === 'event_driven_rolling' ? '50.5 km' : dispatchPolicy === 'periodic_rolling' ? '53.3 km' : '127.8 km'}
-                  </div>
-                  <div className="stat-detail">
-                    {dispatchPolicy === 'event_driven_rolling' ? '-60.5% vs static batch' : dispatchPolicy === 'periodic_rolling' ? '-58.3% mileage' : 'Baseline uninserted batch'}
-                  </div>
-                </div>
-
-                <div className="stat-card amber">
-                  <div className="stat-label">Median Wait (P50)</div>
-                  <div className="stat-value amber">
-                    {dispatchPolicy === 'event_driven_rolling' ? '102.6 s' : dispatchPolicy === 'periodic_rolling' ? '172.6 s' : '169.0 s'}
-                  </div>
-                  <div className="stat-detail">
-                    {dispatchPolicy === 'event_driven_rolling' ? '-39.1% passenger latency' : 'Batch quantization delay'}
-                  </div>
-                </div>
-
-                <div className="stat-card green">
-                  <div className="stat-label">In-Flight Insertions</div>
-                  <div className="stat-value green">
-                    {dispatchPolicy === 'event_driven_rolling' ? '36' : dispatchPolicy === 'periodic_rolling' ? '34' : '0'}
-                  </div>
-                  <div className="stat-detail">
-                    {dispatchPolicy === 'static_batch' ? 'Static batch cannot insert in-flight' : 'Dynamic waypoint insertions'}
-                  </div>
-                </div>
-
-                <div className="stat-card indigo">
-                  <div className="stat-label">Dynamic Reassignments</div>
-                  <div className="stat-value indigo">0</div>
-                  <div className="stat-detail">Zero passenger churn / disruption</div>
-                </div>
-              </div>
-
-              {/* Recourse Detour & Dispatch Map Preview */}
-              <div style={{ marginBottom: '18px', padding: '14px', background: 'var(--bg-hover)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-subtle)' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px', flexWrap: 'wrap', gap: '8px' }}>
-                  <div>
-                    <div style={{ fontWeight: 600, fontSize: '0.8125rem' }}>Dynamic Online Recourse Simulator</div>
-                    <div style={{ fontSize: '0.725rem', color: 'var(--text-secondary)' }}>
-                      Simulate sudden mid-corridor incident (Exp 012) and view dynamic A* detouring vs rolling dispatch
-                    </div>
-                  </div>
-                  <button
-                    className={`btn btn-sm ${incidentActive ? 'btn-danger' : 'btn-outline'}`}
-                    onClick={() => setIncidentActive(!incidentActive)}
-                  >
-                    {incidentActive ? 'Incident Active (Detour Engaged)' : 'Trigger Arterial Closure'}
+        <div style={{ display: 'flex', gap: '8px' }}>
+          {currentStep < STEPS.length - 1 ? (
+            <button type="button" className="btn btn-primary btn-sm" onClick={nextStep}>
+              <span>Next: {STEPS[currentStep + 1].title}</span>
+              <ArrowRight size={14} />
+            </button>
+          ) : (
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <button type="button" className="btn btn-outline btn-sm" onClick={() => setCurrentStep(0)}>
+                <RotateCcw size={13} />
+                <span>Restart Demo</span>
+              </button>
+              {onNavigateTab && (
+                <>
+                  <button type="button" className="btn btn-outline btn-sm" onClick={() => onNavigateTab('experiments')}>
+                    Inspect Experiments →
                   </button>
-                </div>
-                <RouteMap
-                  rider={rider}
-                  drivers={eligibleDrivers.slice(0, 3).map((e) => drivers.find((d) => d.journey_id === e.driver_id)).filter(Boolean)}
-                  matchResults={matchResults}
-                  incident={incidentObj}
-                  height="280px"
-                />
-              </div>
-
-              {/* Navigation */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <button className="btn btn-outline" onClick={prevStep}>← Back</button>
-                <button className="btn btn-primary" onClick={nextStep}>
-                  Proceed to Scientific Evidence →
-                </button>
-              </div>
+                  <button type="button" className="btn btn-primary btn-sm" onClick={() => onNavigateTab('playground')}>
+                    Match Playground →
+                  </button>
+                </>
+              )}
             </div>
-          </div>
-        )}
-
-        {/* ================= STEP 6: EXPERIMENT EVIDENCE ================= */}
-        {currentStep === 5 && (
-          <div className="card animate-in">
-            <div className="card-header">
-              <div>
-                <span className="card-title">Step 6 · Verified Scientific Evidence & Research Matrix</span>
-                <span style={{ fontSize: '0.725rem', color: 'var(--text-muted)' }}>
-                  14 empirical benchmarks confirming filtering guarantees, network circuity divergence, and recourse recovery
-                </span>
-              </div>
-              <span className="badge success">Empirical Synthesis</span>
-            </div>
-            <div className="card-body">
-              {/* Evidence Cards Grid */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '12px', marginBottom: '18px' }}>
-                {[
-                  {
-                    exp: 'Exp 008: Road Network Validation',
-                    badge: 'OSM Downtown SF',
-                    metric: '75.6% False Positive Elimination',
-                    finding: 'Euclidean gating misclassifies 34 of 45 pairs. Dijkstra graph routing corrects top-1 match in 68% of queries.',
-                  },
-                  {
-                    exp: 'Exp 009: Hybrid Two-Tier Pruning',
-                    badge: 'Calibrated Lower Bound',
-                    metric: '81.8% Pruned · 0 False Negatives',
-                    finding: 'Admissible lower-bound pruning saves 81.8% of expensive network Dijkstra calls with 100% true feasible recall.',
-                  },
-                  {
-                    exp: 'Exp 011: Multi-Rider Pooling',
-                    badge: 'Capacity Scaling',
-                    metric: '+70.0% Match Surge (C=2)',
-                    finding: 'Dual-occupancy vehicle pooling surges matched commuters from 40% to 68% within 2.93 km mean detour bounds.',
-                  },
-                  {
-                    exp: 'Exp 012: Dynamic Online Recourse',
-                    badge: 'Sub-5ms Replanning',
-                    metric: '60% → 100% Feasibility Restored',
-                    finding: 'Sudden arterial road closures drop static routes to 60% failure; online recourse restores 100% feasibility in 3.42ms.',
-                  },
-                  {
-                    exp: 'Exp 013: Rolling-Horizon Dispatch',
-                    badge: 'Event-Driven Simulation',
-                    metric: '-60.5% Fleet VKT · -39.1% Wait',
-                    finding: 'Immediate event triggers and active-trip waypoint insertions break vehicle supply bottlenecks.',
-                  },
-                  {
-                    exp: 'Exp 014: Research Synthesis',
-                    badge: 'Multi-Seed Sweeps',
-                    metric: 'H1, H2, H3 Empirically Confirmed',
-                    finding: 'Pre-registered hypotheses on filtering, network divergence, and recourse recovery validated across seeds (42, 101, 2024).',
-                  },
-                ].map((item) => (
-                  <div key={item.exp} className="card" style={{ padding: '12px 14px', borderLeft: '3px solid #3b82f6' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-                      <span style={{ fontWeight: 600, fontSize: '0.8125rem' }}>{item.exp}</span>
-                      <span className="badge info" style={{ fontSize: '9px' }}>{item.badge}</span>
-                    </div>
-                    <div style={{ fontWeight: 700, color: '#34d399', fontSize: '0.875rem', marginBottom: '4px' }}>
-                      {item.metric}
-                    </div>
-                    <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
-                      {item.finding}
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {/* Research Notice Banner */}
-              <div style={{
-                background: 'var(--bg-hover)',
-                padding: '12px 14px',
-                borderRadius: 'var(--radius-sm)',
-                border: '1px solid var(--border-subtle)',
-                marginBottom: '18px',
-              }}>
-                <div style={{ fontWeight: 600, color: 'var(--text-primary)', fontSize: '0.8125rem', marginBottom: '3px' }}>
-                  Scientific Rigor & Synthetic Data Disclosure
-                </div>
-                <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
-                  All evaluations were conducted in controlled synthetic and OpenStreetMap road graph micro-simulations using fixed seeds (42, 101, 2024). No unsubstantiated claims of city-wide real-world deployment are made. Full papers, metrics, and logs are persisted under <code>research/paper/</code> and <code>experiments/</code>.
-                </div>
-              </div>
-
-              {/* Jump Actions */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
-                <button className="btn btn-outline" onClick={() => setCurrentStep(0)}>
-                  Restart Walkthrough
-                </button>
-                <div style={{ display: 'flex', gap: '8px' }}>
-                  {onNavigateTab && (
-                    <>
-                      <button className="btn btn-outline" onClick={() => onNavigateTab('experiments')}>
-                        Open All 14 Experiments →
-                      </button>
-                      <button className="btn btn-primary" onClick={() => onNavigateTab('batch')}>
-                        Explore Batch Assignment →
-                      </button>
-                    </>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );

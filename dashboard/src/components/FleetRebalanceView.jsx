@@ -1,31 +1,47 @@
-import { useState, useMemo, useRef, useEffect } from 'react';
+import { useState, useMemo, useRef, useEffect, useCallback } from 'react';
 import L from 'leaflet';
+import { runFleetRebalancingSimulation, exportToCSV } from '../data';
+import SimulationClockBar from './common/SimulationClockBar';
+import { useSimulationClock } from '../motion/simulationClock';
+import { updateUrlHash } from '../utils/urlState';
+import { createBaseTileLayer } from '../utils/mapTiles';
 import {
-  runFleetRebalancingSimulation,
-  exportToCSV,
-} from '../data';
+  Download,
+  AlertTriangle,
+} from 'lucide-react';
 
 const REGIMES = [
-  { id: 'morning_peak', label: 'Morning Peak', desc: 'Surge at Financial District & SoMa employment cores' },
-  { id: 'evening_peak', label: 'Evening Rush', desc: 'Surge at Caltrain transit terminal & outbound spines' },
-  { id: 'off_peak', label: 'Off-Peak Balanced', desc: 'Evenly distributed metropolitan demand' },
+  { id: 'morning_peak', label: 'Morning Peak', desc: 'Inbound rush to LPU Campus & Jalandhar educational & commercial cores' },
+  { id: 'evening_peak', label: 'Evening Rush', desc: 'Outbound rush from LPU to Phagwara Bus Stand & Ludhiana transit hubs' },
+  { id: 'off_peak', label: 'Off-Peak Balanced', desc: 'Evenly distributed intercity demand along GT Road (NH1) corridor' },
 ];
 
-export default function FleetRebalanceView() {
-  const [regime, setRegime] = useState('evening_peak');
+export default function FleetRebalanceView({ initialRegime = 'evening_peak' }) {
+  const [regime, setRegime] = useState(initialRegime);
   const [idleCount, setIdleCount] = useState(25);
   const [selectedZone, setSelectedZone] = useState(null);
+  const [viewMode, setViewMode] = useState('after'); // 'before' or 'after'
 
   const mapRef = useRef(null);
   const mapInstanceRef = useRef(null);
   const layersRef = useRef([]);
+
+  useEffect(() => {
+    updateUrlHash('staging', { regime, count: idleCount }, true);
+  }, [regime, idleCount]);
 
   const simResult = useMemo(
     () => runFleetRebalancingSimulation(idleCount, regime),
     [idleCount, regime]
   );
 
-  const handleExportDirectives = () => {
+  const clock = useSimulationClock({
+    durationSeconds: 30,
+    initialSpeed: 1,
+    autoPlay: false,
+  });
+
+  const handleExportDirectives = useCallback(() => {
     const data = simResult.directives.map((d) => ({
       directive_id: d.id,
       driver_id: d.driver_id,
@@ -35,9 +51,9 @@ export default function FleetRebalanceView() {
       transit_minutes: d.est_minutes,
     }));
     exportToCSV(data, `repositioning_directives_${regime}.csv`);
-  };
+  }, [simResult, regime]);
 
-  // Map rendering
+  // Leaflet Map Rendering
   useEffect(() => {
     if (!mapRef.current) return;
 
@@ -45,264 +61,248 @@ export default function FleetRebalanceView() {
       mapInstanceRef.current = L.map(mapRef.current, {
         zoomControl: true,
         attributionControl: true,
-      }).setView([37.778, -122.408], 13);
+      }).setView([31.18, 75.72], 10);
 
-      L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-        attribution: '&copy; OpenStreetMap &copy; CARTO',
-        subdomains: 'abcd',
-        maxZoom: 19,
-      }).addTo(mapInstanceRef.current);
+      createBaseTileLayer('google_roadmap').addTo(mapInstanceRef.current);
     }
 
     const map = mapInstanceRef.current;
     setTimeout(() => {
       try {
         map.invalidateSize();
-      } catch {
-        // map unmounted
-      }
+      } catch {}
     }, 150);
 
     layersRef.current.forEach((l) => map.removeLayer(l));
     layersRef.current = [];
 
-    // 1. Draw transit zones
+    // Draw Transit Zones
     simResult.zoneStats.forEach((z) => {
       const isSelected = selectedZone === z.zone_id;
       const isDeficit = z.deficit > 0;
       const isSurplus = z.deficit < 0;
-
       const ringColor = isDeficit ? '#ef4444' : isSurplus ? '#10b981' : '#0ea5e9';
 
-      // Zone radius circle
-      const zoneCircle = L.circle([z.coordinate.latitude, z.coordinate.longitude], {
+      const circle = L.circle([z.coordinate.latitude, z.coordinate.longitude], {
         radius: z.radius_km * 450,
         color: ringColor,
         fillColor: ringColor,
-        fillOpacity: isSelected ? 0.3 : 0.15,
+        fillOpacity: isSelected ? 0.35 : 0.15,
         weight: isSelected ? 2.5 : 1.5,
       }).addTo(map);
 
-      // Zone center marker
-      const zoneMarker = L.circleMarker([z.coordinate.latitude, z.coordinate.longitude], {
+      const marker = L.circleMarker([z.coordinate.latitude, z.coordinate.longitude], {
         radius: isSelected ? 8 : 6,
         color: '#ffffff',
         fillColor: ringColor,
         fillOpacity: 1,
         weight: 2,
       }).bindPopup(`
-        <div style="font-family: var(--font-family); padding: 4px 2px;">
+        <div style="font-family: var(--font-family); padding: 4px;">
           <div style="font-size: 10px; font-weight: 600; text-transform: uppercase; color: var(--text-muted);">${z.zone_id}</div>
           <div style="font-size: 12px; font-weight: 700; color: #f8fafc; margin-top: 2px;">${z.name}</div>
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 4px; margin-top: 6px; font-size: 11px; color: var(--text-secondary);">
-            <div>Idle Supply: <strong>${z.initialVehicles}</strong></div>
-            <div>Target Need: <strong>${z.targetVehicles}</strong></div>
-          </div>
-          <div style="margin-top: 6px;">
-            <span class="badge ${isDeficit ? 'danger' : isSurplus ? 'success' : 'info'}" style="font-size: 9px;">
-              ${isDeficit ? `DEFICIT (-${z.deficit})` : isSurplus ? `SURPLUS (+${Math.abs(z.deficit)})` : 'BALANCED'}
-            </span>
+          <div style="margin-top: 6px; font-size: 11px;">
+            <div>Initial Supply: <strong>${z.initialVehicles}</strong></div>
+            <div>Modeled Need: <strong>${z.targetVehicles}</strong></div>
+            <div>Status: <strong style="color: ${ringColor};">${isDeficit ? `Deficit (-${z.deficit})` : isSurplus ? `Surplus (+${Math.abs(z.deficit)})` : 'Balanced'}</strong></div>
           </div>
         </div>
       `).addTo(map);
 
-      zoneMarker.on('click', () => setSelectedZone(z.zone_id));
-      layersRef.current.push(zoneCircle, zoneMarker);
+      marker.on('click', () => setSelectedZone(z.zone_id));
+      layersRef.current.push(circle, marker);
     });
 
-    // 2. Draw repositioning directive trajectories
-    simResult.directives.forEach((d) => {
-      const fromLL = [d.from_coord.latitude, d.from_coord.longitude];
-      const toLL = [d.to_coord.latitude, d.to_coord.longitude];
+    // Draw relocation paths if in 'after' viewMode
+    if (viewMode === 'after') {
+      simResult.directives.forEach((d) => {
+        const fromLL = [d.from_coord.latitude, d.from_coord.longitude];
+        const toLL = [d.to_coord.latitude, d.to_coord.longitude];
 
-      const line = L.polyline([fromLL, toLL], {
-        color: '#f59e0b',
-        weight: 3,
-        opacity: 0.85,
-        dashArray: '6 6',
-      }).bindPopup(`
-        <div style="font-family: var(--font-family); padding: 4px 2px;">
-          <div style="font-size: 10px; font-weight: 600; text-transform: uppercase; color: #f59e0b;">Relocation Directive</div>
-          <div style="font-family: var(--font-mono); font-size: 12px; font-weight: 600; margin-top: 2px;">${d.driver_id}</div>
-          <div style="font-size: 11px; color: var(--text-secondary); margin-top: 4px;">
-            ${d.from_zone} → ${d.to_zone} · ${d.distance_km} km (~${d.est_minutes} min)
-          </div>
-        </div>
-      `).addTo(map);
+        const line = L.polyline([fromLL, toLL], {
+          color: '#f59e0b',
+          weight: 2.5,
+          dashArray: '5 6',
+          opacity: 0.85,
+        }).addTo(map);
 
-      layersRef.current.push(line);
-    });
+        // Interpolated moving vehicle along relocation path
+        const lat = fromLL[0] + (toLL[0] - fromLL[0]) * clock.progress;
+        const lng = fromLL[1] + (toLL[1] - fromLL[1]) * clock.progress;
 
-  }, [simResult, selectedZone]);
+        const vehMarker = L.circleMarker([lat, lng], {
+          radius: 4,
+          fillColor: '#f59e0b',
+          color: '#ffffff',
+          weight: 1.5,
+          fillOpacity: 1,
+        }).addTo(map);
+
+        layersRef.current.push(line, vehMarker);
+      });
+    }
+  }, [simResult, selectedZone, viewMode, clock.progress]);
 
   return (
-    <div className="animate-in" id="fleet-rebalance-view">
-      <div className="section-header">
-        <h1 className="section-title">Predictive Fleet Repositioning & Spatial Staging</h1>
-        <p className="section-desc">
-          Proactively stage idle vehicles toward forecasted passenger demand hotspots before trip requests arrive, minimizing P95 commuter wait times.
-        </p>
+    <div className="animate-in" id="fleet-staging-view">
+      {/* Permanent Research Honesty Banner */}
+      <div className="simulation-honesty-banner" role="alert">
+        <AlertTriangle size={15} className="text-amber" />
+        <span>
+          <strong>Simulation: modeled demand, not observed.</strong> Transit zone demands derive from synthetic time-of-day multipliers, not live telemetry.
+        </span>
       </div>
 
-      {/* Controls Bar */}
-      <div style={{ display: 'flex', gap: '14px', marginBottom: '18px', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between' }}>
-        <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-          {REGIMES.map((r) => {
-            const isSel = regime === r.id;
-            return (
+      {/* Page Header */}
+      <div className="section-header" style={{ marginBottom: '16px' }}>
+        <div>
+          <h1 className="section-title">Fleet Staging & Predictive Rebalancing</h1>
+          <p className="section-desc">
+            Balance spatial supply across downtown transit corridors to reduce prospective passenger wait times.
+          </p>
+        </div>
+      </div>
+
+      {/* Controls */}
+      <div style={{ display: 'flex', gap: '12px', marginBottom: '16px', flexWrap: 'wrap', alignItems: 'flex-end' }}>
+        <div className="form-group">
+          <label className="form-label" htmlFor="regime-select">Demand Regime</label>
+          <select
+            id="regime-select"
+            className="form-select"
+            value={regime}
+            onChange={(e) => setRegime(e.target.value)}
+          >
+            {REGIMES.map((r) => (
+              <option key={r.id} value={r.id}>{r.label}</option>
+            ))}
+          </select>
+        </div>
+
+        <div className="form-group">
+          <label className="form-label" htmlFor="idle-vehicles">Idle Vehicles</label>
+          <select
+            id="idle-vehicles"
+            className="form-select"
+            value={idleCount}
+            onChange={(e) => setIdleCount(parseInt(e.target.value, 10))}
+          >
+            <option value={15}>15 Idle Vehicles</option>
+            <option value={25}>25 Idle Vehicles</option>
+            <option value={40}>40 Idle Vehicles</option>
+          </select>
+        </div>
+
+        {/* Before / After Toggle */}
+        <div className="segmented-control" role="group" aria-label="Staging view state">
+          <button
+            type="button"
+            className={`segmented-btn ${viewMode === 'before' ? 'active' : ''}`}
+            onClick={() => setViewMode('before')}
+            aria-pressed={viewMode === 'before'}
+          >
+            Before Rebalancing
+          </button>
+          <button
+            type="button"
+            className={`segmented-btn ${viewMode === 'after' ? 'active' : ''}`}
+            onClick={() => setViewMode('after')}
+            aria-pressed={viewMode === 'after'}
+          >
+            After Relocations ({simResult.directives.length})
+          </button>
+        </div>
+
+        <button type="button" className="btn btn-outline" onClick={handleExportDirectives}>
+          <Download size={14} />
+          <span>Export Directives</span>
+        </button>
+      </div>
+
+      {/* Telemetry Strip */}
+      <div className="stats-grid" style={{ marginBottom: '16px' }}>
+        <div className="stat-card green">
+          <div className="stat-label">Deficit Resolution</div>
+          <div className="stat-value green font-mono">{simResult.deficitReductionPct.toFixed(1)}%</div>
+          <div className="stat-detail">Relocated supply satisfied demand gap</div>
+        </div>
+
+        <div className="stat-card amber">
+          <div className="stat-label">Staging Deadhead Mileage</div>
+          <div className="stat-value amber font-mono">{simResult.totalVkt.toFixed(1)} km</div>
+          <div className="stat-detail">Repositioning fleet transit burden</div>
+        </div>
+
+        <div className="stat-card cyan">
+          <div className="stat-label">Active Directives</div>
+          <div className="stat-value cyan font-mono">{simResult.directives.length}</div>
+          <div className="stat-detail">Inter-zone relocation dispatches</div>
+        </div>
+
+        <div className="stat-card indigo">
+          <div className="stat-label">Unmet Demand</div>
+          <div className="stat-value indigo font-mono">{simResult.remainingUnmet}</div>
+          <div className="stat-detail">Uncovered passenger seats</div>
+        </div>
+      </div>
+
+      {/* Simulation Clock Scrubber */}
+      {viewMode === 'after' && (
+        <div style={{ marginBottom: '16px' }}>
+          <SimulationClockBar clock={clock} title="Relocation Transit Timeline" />
+        </div>
+      )}
+
+      {/* Map & Zone List */}
+      <div className="grid-sidebar">
+        {/* Zone Balance List */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          <div className="card-header" style={{ padding: '4px 0' }}>
+            <span className="text-xs text-muted font-semibold uppercase">Transit Zones ({simResult.zoneStats.length})</span>
+            {selectedZone && (
               <button
-                key={r.id}
-                className={`btn ${isSel ? 'btn-primary' : 'btn-outline'}`}
-                onClick={() => setRegime(r.id)}
+                type="button"
+                className="btn btn-ghost btn-sm"
+                onClick={() => setSelectedZone(null)}
               >
-                {r.label}
+                Clear
               </button>
+            )}
+          </div>
+
+          {simResult.zoneStats.map((z) => {
+            const isDeficit = z.deficit > 0;
+            const isSurplus = z.deficit < 0;
+            const isSelected = selectedZone === z.zone_id;
+
+            return (
+              <div
+                key={z.zone_id}
+                className={`card ${isSelected ? 'selected-border' : ''}`}
+                style={{ padding: '10px 12px', cursor: 'pointer' }}
+                onClick={() => setSelectedZone(isSelected ? null : z.zone_id)}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                  <span style={{ fontWeight: 600, fontSize: '0.85rem' }}>{z.name}</span>
+                  <span className={`badge ${isDeficit ? 'danger' : isSurplus ? 'success' : 'neutral'}`}>
+                    {isDeficit ? `Deficit (-${z.deficit})` : isSurplus ? `Surplus (+${Math.abs(z.deficit)})` : 'Balanced'}
+                  </span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+                  <span>Supply: <strong>{z.initialVehicles}</strong></span>
+                  <span>Modeled Need: <strong>{z.targetVehicles}</strong></span>
+                  <span>Effective Demand: <strong>{z.effectiveDemand}</strong></span>
+                </div>
+              </div>
             );
           })}
         </div>
 
-        <div style={{ display: 'flex', gap: '14px', alignItems: 'center' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Idle Fleet:</span>
-            <input
-              type="range"
-              min={10}
-              max={50}
-              step={5}
-              value={idleCount}
-              onChange={(e) => setIdleCount(parseInt(e.target.value, 10))}
-              style={{ width: '110px' }}
-            />
-            <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 600, fontSize: '0.8125rem' }}>{idleCount}</span>
-          </div>
-
-          <button className="btn btn-outline" onClick={handleExportDirectives}>
-            Export CSV
-          </button>
-        </div>
-      </div>
-
-      {/* KPI Stats Grid */}
-      <div className="stats-grid" style={{ marginBottom: '18px' }}>
-        <div className="stat-card cyan">
-          <div className="stat-label">Total Idle Fleet</div>
-          <div className="stat-value cyan">{simResult.idleCount}</div>
-          <div className="stat-detail">Available unassigned vehicles</div>
-        </div>
-
-        <div className="stat-card green">
-          <div className="stat-label">Relocation Directives</div>
-          <div className="stat-value green">{simResult.directives.length}</div>
-          <div className="stat-detail">Proactive pre-staging moves</div>
-        </div>
-
-        <div className="stat-card amber">
-          <div className="stat-label">Deficit Resolution</div>
-          <div className="stat-value amber">{simResult.deficitReductionPct}%</div>
-          <div className="stat-detail">{simResult.initialUnmet} → {simResult.remainingUnmet} unmet vehicle gap</div>
-        </div>
-
-        <div className="stat-card indigo">
-          <div className="stat-label">Rebalance Deadhead VKT</div>
-          <div className="stat-value indigo">{simResult.totalVkt} km</div>
-          <div className="stat-detail">Total anticipatory fleet mileage</div>
-        </div>
-      </div>
-
-      {/* Main Grid: Map + Table */}
-      <div className="grid-sidebar" style={{ gridTemplateColumns: '1fr 360px' }}>
-        {/* Map Panel */}
-        <div className="card" style={{ padding: '12px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-            <div style={{ fontWeight: 600, fontSize: '0.8125rem' }}>
-              San Francisco Demand Radar & Staging Directives
-            </div>
-            <div style={{ display: 'flex', gap: '10px', fontSize: '0.7rem' }}>
-              <span style={{ color: '#ef4444' }}>● Deficit Zone</span>
-              <span style={{ color: '#10b981' }}>● Surplus Zone</span>
-              <span style={{ color: '#f59e0b' }}>- - Relocation Vector</span>
-            </div>
-          </div>
-          <div ref={mapRef} style={{ width: '100%', height: '480px', borderRadius: 'var(--radius-sm)', overflow: 'hidden' }} />
-        </div>
-
-        {/* Sidebar: Zone Status & Directives Log */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-          {/* Zone Allocation Table */}
-          <div className="card">
-            <div className="card-header">
-              <span className="card-title">Zone Supply vs Demand</span>
-            </div>
-            <div className="card-body" style={{ padding: '10px' }}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                {simResult.zoneStats.map((z) => {
-                  const isDef = z.deficit > 0;
-                  const isSur = z.deficit < 0;
-                  return (
-                    <div
-                      key={z.zone_id}
-                      style={{
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        padding: '7px 9px',
-                        background: 'var(--bg-hover)',
-                        borderRadius: 'var(--radius-xs)',
-                        borderLeft: `3px solid ${isDef ? '#ef4444' : isSur ? '#10b981' : '#0ea5e9'}`,
-                      }}
-                    >
-                      <div>
-                        <div style={{ fontWeight: 600, fontSize: '0.775rem' }}>{z.name}</div>
-                        <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>
-                          Idle: <strong>{z.initialVehicles}</strong> · Target: <strong>{z.targetVehicles}</strong>
-                        </div>
-                      </div>
-                      <span className={`badge ${isDef ? 'danger' : isSur ? 'success' : 'info'}`} style={{ fontSize: '10px' }}>
-                        {isDef ? `-${z.deficit}` : isSur ? `+${Math.abs(z.deficit)}` : 'BALANCED'}
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-
-          {/* Directives Log */}
-          <div className="card" style={{ flex: 1 }}>
-            <div className="card-header">
-              <span className="card-title">Staging Instructions</span>
-              <span className="badge info">{simResult.directives.length} Issued</span>
-            </div>
-            <div className="card-body" style={{ padding: '10px', maxHeight: '220px', overflowY: 'auto' }}>
-              {simResult.directives.length === 0 ? (
-                <div style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '16px', fontSize: '0.75rem' }}>
-                  No relocation needed; fleet is in spatial supply equilibrium.
-                </div>
-              ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                  {simResult.directives.map((d) => (
-                    <div
-                      key={d.id}
-                      style={{
-                        padding: '6px 8px',
-                        background: 'var(--accent-warning-subtle)',
-                        borderRadius: 'var(--radius-xs)',
-                        border: '1px solid rgba(245, 158, 11, 0.25)',
-                        fontSize: '0.725rem',
-                      }}
-                    >
-                      <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 600, marginBottom: '2px' }}>
-                        <code style={{ color: '#fbbf24' }}>{d.driver_id}</code>
-                        <span>{d.distance_km} km (~{d.est_minutes}m)</span>
-                      </div>
-                      <div style={{ color: 'var(--text-secondary)' }}>
-                        {d.from_zone} → {d.to_zone}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
+        {/* Map */}
+        <div className="map-panel-wrapper" style={{ height: '500px', position: 'relative' }}>
+          <div ref={mapRef} className="map-container" style={{ height: '100%', width: '100%' }} />
+          <div className="map-overlay-badge top-right">
+            <span className="badge warning sim-badge">Simulated Transit Staging</span>
           </div>
         </div>
       </div>

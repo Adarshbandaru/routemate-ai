@@ -82,6 +82,11 @@ RouteMate AI is a modular, transparent matching and fleet dispatch intelligence 
    - **Live API Workbench**: Real-time HTTP FastAPI integration, cURL code generator, and client-side simulator mode.
    - **Architecture Blueprint**: Interactive 6-stage pipeline specifications and mathematical constraint thresholds.
 
+5. **India-First Geographic Focus: Punjab Regional Corridor**
+   - Centered on the **Jalandhar – Phagwara – Ludhiana corridor** near **Lovely Professional University (LPU)** along National Highway 1 / NH44 (Grand Trunk Road).
+   - **Native Scenario Presets**: LPU Evening Commute (Jalandhar Station → LPU), Campus Shuttle Rush (LPU → Phagwara → Ludhiana), Industrial Delivery (Ludhiana Industrial Area → Phagwara Hub), and Stress Test (Phagwara Gridlock / GT Road bottleneck).
+   - **Multi-Basemap Support**: Toggle between Dark Mission Carto, Google Maps Streets, and Google Satellite Hybrid tiles.
+
 ### 🖥️ Dashboard Showcase
 
 | **Guided Demo (6-Stage Workflow)** | **Match Playground & Spatial Matrix** |
@@ -102,8 +107,8 @@ Follow this step-by-step walkthrough to inspect RouteMate AI:
 
 1. **Step 1: Ingest Ride Request**
    - In the dashboard, click **Guided Demo**.
-   - Select the preset `Financial District to SoMa Commute` (1 seat, peak morning rush hour).
-   - Notice the passenger origin pin, destination pin, and direct corridor vector.
+   - Select the preset `LPU Evening Commute (Jalandhar Station → LPU Campus)` (1 seat, off-peak shift).
+   - Notice the passenger origin pin, destination pin, and direct corridor vector along the GT Road / NH44 corridor.
    - Click **Proceed to Feasibility Filtering →**.
 
 2. **Step 2: Inspect 8-Gate Feasibility Matrix**
@@ -204,23 +209,26 @@ All metrics correspond directly to reproducible experimental artifacts stored un
    npm install
    ```
 
-2. Run frontend linter:
+2. Run frontend tests and linter:
    ```bash
-   npx oxlint
+   npm test       # Node test runner: 11 tests verifying Haversine math, bearing, & URL state
+   npm run lint   # Oxlint: strict 0 warnings, 0 errors policy
    ```
-   *Expected outcome: `Found 0 warnings and 0 errors`*
 
 3. Start the local development server:
    ```bash
    npm run dev
    ```
    Open **[http://localhost:5173](http://localhost:5173)** in your browser.
+   - **Hash Navigation**: `/#/demo`, `/#/playground`, `/#/batch`, `/#/staging`, `/#/experiments`, `/#/api`, `/#/architecture`.
+   - **Hotkeys**: `⌘K` (Command Palette), `E` (Global Evidence Ledger), `?` (Keyboard Shortcuts), `Space` (Simulation Clock Play/Pause).
+   - **Design System**: See [`DESIGN_SYSTEM.md`](DESIGN_SYSTEM.md) for full token, motion, and research integrity specifications.
 
 4. Validate the production build:
    ```bash
    npm run build
    ```
-   *Expected outcome: `✓ built in ~400ms` with optimized assets in `dist/`.*
+   *Expected outcome: `✓ built in ~700ms` with optimized assets in `dist/`.*
 
 ---
 

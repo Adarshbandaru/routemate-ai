@@ -1,0 +1,77 @@
+{
+  "id": "industrial_delivery",
+  "name": "Industrial Delivery",
+  "description": "Ludhiana Industrial Zone to Phagwara Hub, scheduled delivery",
+  "pickup": {
+    "lat": 30.9409,
+    "lng": 75.8567,
+    "address": "Ludhiana Industrial Zone, Ludhiana, Punjab",
+    "name": "Ludhiana Hub",
+    "icon": "warehouse"
+  },
+  "dropoff": {
+    "lat": 30.6700,
+    "lng": 76.6300,
+    "address": "Phagwara Business Hub, Phagwara, Punjab",
+    "name": "Phagwara Hub",
+    "icon": "warehouse"
+  },
+  "distance_km": 20.8,
+  "duration_min": 22,
+  "route_polyline": [
+    [30.9409, 75.8567],
+    [30.9300, 75.8600],
+    [30.9100, 75.8700],
+    [30.8900, 75.8800],
+    [30.8700, 75.8900],
+    [30.8500, 75.9000],
+    [30.8200, 75.9200],
+    [30.7900, 75.9400],
+    [30.7600, 75.9600],
+    [30.7300, 75.9800],
+    [30.7000, 76.0000],
+    [30.7200, 76.2000],
+    [30.7400, 76.4000],
+    [30.7600, 76.5000],
+    [30.6900, 76.6100],
+    [30.6700, 76.6300]
+  ],
+  "available_drivers": [
+    {
+      "id": "driver_007",
+      "name": "Jaswant Singh",
+      "rating": 4.75,
+      "reviews": 456,
+      "vehicle_type": "tempo",
+      "vehicle_name": "Force Tempo",
+      "vehicle_number": "PB 07 MN 6789",
+      "current_lat": 30.9350,
+      "current_lng": 75.8600,
+      "current_heading": 315,
+      "eta_to_pickup_min": 4,
+      "eta_to_dropoff_min": 22,
+      "seats_available": 1,
+      "price_estimate": "₹380",
+      "photo_url": "https://i.pravatar.cc/150?img=7",
+      "phone": "+91 98765 43216"
+    },
+    {
+      "id": "driver_008",
+      "name": "Ravi Patel",
+      "rating": 4.6,
+      "reviews": 334,
+      "vehicle_type": "sedan",
+      "vehicle_name": "Tata Nexon",
+      "vehicle_number": "PB 08 OP 3456",
+      "current_lat": 30.9400,
+      "current_lng": 75.8550,
+      "current_heading": 180,
+      "eta_to_pickup_min": 2,
+      "eta_to_dropoff_min": 20,
+      "seats_available": 2,
+      "price_estimate": "₹420",
+      "photo_url": "https://i.pravatar.cc/150?img=8",
+      "phone": "+91 98765 43217"
+    }
+  ]
+}

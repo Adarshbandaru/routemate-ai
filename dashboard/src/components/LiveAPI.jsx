@@ -9,6 +9,8 @@ import {
   checkAPIHealth,
   exportToJSON,
 } from '../data';
+import { updateUrlHash } from '../utils/urlState';
+import { Terminal, Copy, Check, Download } from 'lucide-react';
 
 export default function LiveAPI() {
   const [apiUrl, setApiUrl] = useState('http://127.0.0.1:8000');
@@ -25,7 +27,14 @@ export default function LiveAPI() {
   const [error, setError] = useState(null);
   const [requestLog, setRequestLog] = useState([]);
   const [useLocalFallback, setUseLocalFallback] = useState(false);
+  const [copiedCurl, setCopiedCurl] = useState(false);
+  const [copiedResponse, setCopiedResponse] = useState(false);
   const pollRef = useRef(null);
+
+  // Sync hash
+  useEffect(() => {
+    updateUrlHash('api', { endpoint }, true);
+  }, [endpoint]);
 
   const checkHealth = useCallback(async () => {
     const h = await checkAPIHealth(apiUrl);
@@ -330,7 +339,7 @@ export default function LiveAPI() {
               )}
             </div>
 
-            <div style={{ display: 'flex', gap: '8px' }}>
+            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
               <button
                 className="btn btn-primary"
                 onClick={sendRequest}
@@ -343,6 +352,22 @@ export default function LiveAPI() {
                 onClick={() => setSeed(Math.floor(Math.random() * 1000))}
               >
                 Random Seed
+              </button>
+              <button
+                type="button"
+                className="btn btn-outline"
+                onClick={() => {
+                  const curlCmd = endpoint === 'matches'
+                    ? `curl -X POST "${apiUrl}/v1/matches" -H "Content-Type: application/json" -d '{"rider": {"journey_id":"rider-${seed}","start":{"latitude":31.3260,"longitude":75.5762},"destination":{"latitude":31.2536,"longitude":75.7037},"departure":"2026-10-09T08:30:00Z","route":[],"seats_requested":1},"drivers":[],"top_k":${topK}}'`
+                    : `curl -X POST "${apiUrl}/v1/assignments" -H "Content-Type: application/json" -d '{"riders":[],"drivers":[],"method":"${batchMethod}"}'`;
+                  navigator.clipboard.writeText(curlCmd);
+                  setCopiedCurl(true);
+                  setTimeout(() => setCopiedCurl(false), 2000);
+                }}
+                title="Copy request as cURL command line"
+              >
+                {copiedCurl ? <Check size={14} className="text-success" /> : <Terminal size={14} />}
+                <span>{copiedCurl ? 'cURL Copied' : 'Copy cURL'}</span>
               </button>
             </div>
 
@@ -358,14 +383,33 @@ export default function LiveAPI() {
         {/* Response panel */}
         <div className="card">
           <div className="card-header">
-            <span className="card-title">Response Payload</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span className="card-title">Response Payload</span>
+              {(useLocalFallback || result?.api_version === 'client-simulator-v1') && (
+                <span className="badge warning sim-badge">Simulated Response</span>
+              )}
+            </div>
             {result && (
-              <button
-                className="btn btn-outline btn-sm"
-                onClick={() => exportToJSON(result, `api_response_${result.type}_seed${seed}.json`)}
-              >
-                Export JSON
-              </button>
+              <div style={{ display: 'flex', gap: '6px' }}>
+                <button
+                  className="btn btn-outline btn-sm"
+                  onClick={() => {
+                    navigator.clipboard.writeText(JSON.stringify(result, null, 2));
+                    setCopiedResponse(true);
+                    setTimeout(() => setCopiedResponse(false), 2000);
+                  }}
+                >
+                  {copiedResponse ? <Check size={13} className="text-success" /> : <Copy size={13} />}
+                  <span>{copiedResponse ? 'Copied' : 'Copy JSON'}</span>
+                </button>
+                <button
+                  className="btn btn-outline btn-sm"
+                  onClick={() => exportToJSON(result, `api_response_${result.type}_seed${seed}.json`)}
+                >
+                  <Download size={13} />
+                  <span>Export</span>
+                </button>
+              </div>
             )}
           </div>
           <div className="card-body">

@@ -1,0 +1,80 @@
+{
+  "id": "phagwara_gridlock",
+  "name": "Phagwara Gridlock (Incident)",
+  "description": "NH1 closure near Phagwara, demonstrating dynamic rerouting",
+  "pickup": {
+    "lat": 30.9020,
+    "lng": 76.7107,
+    "address": "LPU Campus, Phagwara, Punjab",
+    "name": "LPU Gate",
+    "icon": "graduation"
+  },
+  "dropoff": {
+    "lat": 31.7256,
+    "lng": 75.5241,
+    "address": "Jalandhar City Center, Jalandhar, Punjab",
+    "name": "Jalandhar Center",
+    "icon": "store"
+  },
+  "distance_km": 32.4,
+  "duration_min": 42,
+  "incident": {
+    "description": "NH1 closure near Rama Mandi",
+    "lat": 31.5000,
+    "lng": 76.2000
+  },
+  "route_polyline": [
+    [30.9020, 76.7107],
+    [30.9200, 76.6800],
+    [30.9500, 76.6500],
+    [31.0000, 76.6000],
+    [31.1000, 76.5000],
+    [31.2000, 76.4000],
+    [31.3000, 76.3500],
+    [31.4000, 76.3000],
+    [31.5500, 76.2000],
+    [31.6000, 75.9000],
+    [31.6500, 75.7500],
+    [31.7000, 75.6000],
+    [31.7200, 75.5500],
+    [31.7256, 75.5241]
+  ],
+  "available_drivers": [
+    {
+      "id": "driver_009",
+      "name": "Amarjit Singh",
+      "rating": 4.82,
+      "reviews": 523,
+      "vehicle_type": "sedan",
+      "vehicle_name": "Maruti Ciaz",
+      "vehicle_number": "PB 09 QR 8901",
+      "current_lat": 30.9050,
+      "current_lng": 76.7050,
+      "current_heading": 270,
+      "eta_to_pickup_min": 1,
+      "eta_to_dropoff_min": 42,
+      "seats_available": 2,
+      "price_estimate": "₹580",
+      "photo_url": "https://i.pravatar.cc/150?img=9",
+      "phone": "+91 98765 43218"
+    },
+    {
+      "id": "driver_010",
+      "name": "Deepika Sharma",
+      "rating": 4.75,
+      "reviews": 401,
+      "vehicle_type": "sedan",
+      "vehicle_name": "Honda Accord",
+      "vehicle_number": "PB 10 ST 2345",
+      "current_lat": 30.9100,
+      "current_lng": 76.7200,
+      "current_heading": 225,
+      "eta_to_pickup_min": 3,
+      "eta_to_dropoff_min": 43,
+      "seats_available": 3,
+      "price_estimate": "₹620",
+      "photo_url": "https://i.pravatar.cc/150?img=10",
+      "phone": "+91 98765 43219"
+    }
+  ]
+}
